@@ -4,6 +4,7 @@ export default defineConfig({
   site: {
     title: "ezdoc",
     description: "基于 Git 仓库的文档管理与渲染系统",
+    url: "https://coldplay-now.github.io/ezdoc",
     favicon: "/favicon.ico",
     socials: {
       github: "https://github.com/Coldplay-now/ezdoc",

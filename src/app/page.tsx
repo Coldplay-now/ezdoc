@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ezdocConfig from "@config";
 import { getAllSlugs } from "@/lib/mdx";
 import { getNavigation } from "@/lib/docs";
+
+const siteUrl = ezdocConfig.site.url ?? "";
+
+export const metadata: Metadata = {
+  title: ezdocConfig.site.title,
+  description: ezdocConfig.site.description ?? "Documentation powered by ezdoc",
+  openGraph: {
+    type: "website",
+    title: ezdocConfig.site.title,
+    description: ezdocConfig.site.description ?? "Documentation powered by ezdoc",
+    url: siteUrl || undefined,
+  },
+};
 
 export default function Home() {
   const title = ezdocConfig.site.title;

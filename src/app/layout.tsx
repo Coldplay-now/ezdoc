@@ -15,9 +15,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = ezdocConfig.site.url ?? "";
+
 export const metadata: Metadata = {
-  title: ezdocConfig.site.title,
+  title: {
+    default: ezdocConfig.site.title,
+    template: `%s | ${ezdocConfig.site.title}`,
+  },
   description: ezdocConfig.site.description ?? "Documentation powered by ezdoc",
+  metadataBase: siteUrl ? new URL(siteUrl) : undefined,
+  openGraph: {
+    type: "website",
+    siteName: ezdocConfig.site.title,
+    locale: ezdocConfig.i18n?.defaultLocale === "zh" ? "zh_CN" : "en_US",
+    title: ezdocConfig.site.title,
+    description: ezdocConfig.site.description ?? "Documentation powered by ezdoc",
+    url: siteUrl || undefined,
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +41,14 @@ export default function RootLayout({
 }>) {
   const defaultTheme = ezdocConfig.theme?.defaultMode ?? "system";
   const locale = ezdocConfig.i18n?.defaultLocale ?? "zh";
+  const basePath =
+    process.env.EZDOC_BASE_PATH ?? ezdocConfig.deploy?.basePath ?? "";
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        {basePath && <meta name="pagefind-base" content={basePath} />}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

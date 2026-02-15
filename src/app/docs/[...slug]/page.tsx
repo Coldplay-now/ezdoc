@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDocBySlug, getAllSlugs } from "@/lib/mdx";
 import { getNavigation, extractToc, getPrevNext } from "@/lib/docs";
 import { components } from "@/components/mdx/mdx-components";
 import { TableOfContents } from "@/components/layout/toc";
 import { DocPagination } from "@/components/layout/doc-pagination";
+import ezdocConfig from "@config";
 
 // ---------------------------------------------------------------------------
 // Static params generation for static export
@@ -22,17 +24,30 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string[] }>;
-}) {
+}): Promise<Metadata> {
   const { slug: slugParts } = await params;
   const slug = slugParts.join("/");
+
+  const siteUrl = ezdocConfig.site.url ?? "";
 
   try {
     const doc = await getDocBySlug(slug, {
       components: components as Record<string, React.ComponentType<unknown>>,
     });
+
+    const title = doc.frontmatter.title ?? slug;
+    const description = doc.frontmatter.description;
+    const pageUrl = siteUrl ? `${siteUrl}/docs/${slug}` : undefined;
+
     return {
-      title: doc.frontmatter.title ?? slug,
-      description: doc.frontmatter.description,
+      title,
+      description,
+      openGraph: {
+        type: "article",
+        title,
+        description: description ?? undefined,
+        url: pageUrl,
+      },
     };
   } catch {
     return { title: "Not Found" };
