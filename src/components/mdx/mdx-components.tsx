@@ -287,27 +287,20 @@ function Pre({
   ...props
 }: ComponentPropsWithoutRef<"pre"> & { "data-language"?: string }) {
   // Detect ```mermaid code blocks and route to the Mermaid renderer.
+  // Check both data-language (set by rehype-pretty-code) and child className
+  // (language-mermaid from MDX compiler) in a single pass.
   const dataLang = props["data-language"];
+  const childEl =
+    children && typeof children === "object" && "props" in children
+      ? (children as ReactElement<{ className?: string; children?: ReactNode }>)
+      : null;
+  const isMermaid =
+    dataLang === "mermaid" ||
+    (childEl?.props?.className ?? "").includes("language-mermaid");
 
-  if (dataLang === "mermaid") {
-    const chart = extractText(
-      children && typeof children === "object" && "props" in children
-        ? (children as ReactElement<{ children?: ReactNode }>).props.children
-        : children,
-    );
+  if (isMermaid) {
+    const chart = extractText(childEl?.props?.children ?? children);
     return <Mermaid chart={chart} />;
-  }
-
-  if (children && typeof children === "object" && "props" in children) {
-    const child = children as ReactElement<{
-      className?: string;
-      children?: ReactNode;
-    }>;
-    const childClassName = child.props?.className ?? "";
-    if (childClassName.includes("language-mermaid")) {
-      const chart = extractText(child.props.children);
-      return <Mermaid chart={chart} />;
-    }
   }
 
   // Delegate to client component for language tag + copy button

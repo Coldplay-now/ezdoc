@@ -64,6 +64,7 @@ export function Sidebar({
         break;
       }
     }
+    // Only re-run when currentSlug changes; onClose and navigation are stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSlug]);
 

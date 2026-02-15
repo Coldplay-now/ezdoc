@@ -60,7 +60,10 @@ function readFrontmatter(filePath: string): Record<string, unknown> {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
     return data;
-  } catch {
+  } catch (err) {
+    console.warn(
+      `[ezdoc] Failed to read frontmatter from ${filePath}: ${err instanceof Error ? err.message : err}`
+    );
     return {};
   }
 }
@@ -179,7 +182,10 @@ function buildNavFromDirectory(docsDir: string, locale: string): NavGroup[] {
     const fm = filePath ? readFrontmatter(filePath) : {};
     const title = (fm.title as string) || path.basename(slug);
 
-    groups.get(groupName)!.push({ title, path: slug });
+    const group = groups.get(groupName);
+    if (group) {
+      group.push({ title, path: slug });
+    }
   }
 
   return Array.from(groups.entries()).map(([group, pages]) => ({

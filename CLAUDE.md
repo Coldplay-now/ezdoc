@@ -18,7 +18,7 @@ ezdoc 是一个基于 Git 仓库的文档管理与渲染系统。用户在 Git �
 - 图表：Mermaid.js（客户端渲染，next/dynamic + ssr: false）
 - 图片处理：构建时 sharp 预处理（纯静态导出不支持 next/image 服务端优化）
 - 搜索：Pagefind（构建后生成索引）
-- 多语言：next-intl
+- 多语言：自研 locale 路由 + 配置驱动（docs/{locale}/ 目录结构）
 - 暗色模式：next-themes
 - 包管理器：pnpm
 - Node.js：v20 LTS

@@ -10,7 +10,6 @@ import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
-import matter from "gray-matter";
 import type { Options as RehypePrettyCodeOptions } from "rehype-pretty-code";
 
 import ezdocConfig from "@config";
@@ -102,17 +101,15 @@ export async function getDocBySlug(
 
   const raw = fs.readFileSync(filePath, "utf-8");
 
-  // 用 gray-matter 提取 frontmatter
-  const { data } = matter(raw);
-
-  // 编译 MDX（传入去掉 frontmatter 后的内容，避免重复解析）
+  // compileMDX 已通过 parseFrontmatter: true 解析 frontmatter，
+  // 无需再用 gray-matter 重复解析
   const { content, frontmatter } = await compileMDX(raw, {
     components: options?.components,
   });
 
   return {
     content,
-    frontmatter: { ...data, ...frontmatter } as Frontmatter,
+    frontmatter: frontmatter as Frontmatter,
     raw,
     slug,
   };
