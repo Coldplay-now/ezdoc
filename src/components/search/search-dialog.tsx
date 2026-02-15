@@ -138,12 +138,34 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         const search = await pagefind.search(query);
         if (cancelled) return;
 
-        const data = await Promise.all(
-          search.results.slice(0, 10).map((r) => r.data())
+        const topResults = search.results.slice(0, 10);
+        if (topResults.length === 0) {
+          setResults([]);
+          setActiveIndex(0);
+          return;
+        }
+
+        // Progressive loading: first batch (3) in parallel for fast display,
+        // then load remaining one by one to limit concurrent requests.
+        // At 100+ docs this avoids blasting 10 parallel fragment fetches.
+        const FIRST_BATCH = 3;
+        const loaded: PagefindResultData[] = [];
+
+        const firstBatch = await Promise.all(
+          topResults.slice(0, FIRST_BATCH).map((r) => r.data())
         );
         if (cancelled) return;
-        setResults(data);
+        loaded.push(...firstBatch);
+        setResults([...loaded]);
         setActiveIndex(0);
+
+        for (let i = FIRST_BATCH; i < topResults.length; i++) {
+          if (cancelled) return;
+          const data = await topResults[i].data();
+          if (cancelled) return;
+          loaded.push(data);
+          setResults([...loaded]);
+        }
       } catch {
         if (!cancelled) setResults([]);
       } finally {

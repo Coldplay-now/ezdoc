@@ -15,6 +15,7 @@ export function DocPagination({ prev, next, locale }: DocPaginationProps) {
     <nav
       className="mt-12 flex items-stretch gap-4 border-t border-border pt-6"
       aria-label="Pagination"
+      data-pagefind-ignore
     >
       {/* Previous page */}
       {prev ? (
