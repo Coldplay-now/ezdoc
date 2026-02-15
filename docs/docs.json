@@ -21,6 +21,12 @@
       "pages": [
         "components"
       ]
+    },
+    {
+      "group": "示例",
+      "pages": [
+        { "title": "Building Skills for Claude", "path": "guide/building-skills-for-claude" }
+      ]
     }
   ]
 }
