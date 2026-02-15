@@ -2,17 +2,25 @@
   "navigation": [
     {
       "group": "入门",
-      "pages": ["getting-started"]
+      "pages": [
+        "getting-started",
+        { "title": "Markdown 基础语法", "path": "guide/markdown-basics" }
+      ]
     },
     {
       "group": "指南",
       "pages": [
-        { "title": "配置指南", "path": "guide/configuration" }
+        { "title": "配置指南", "path": "guide/configuration" },
+        { "title": "交互组件", "path": "guide/interactive-components" },
+        { "title": "代码与语法高亮", "path": "guide/code-highlighting" },
+        { "title": "数学公式与图表", "path": "guide/math-and-diagrams" }
       ]
     },
     {
       "group": "参考",
-      "pages": ["components"]
+      "pages": [
+        "components"
+      ]
     }
   ]
 }
