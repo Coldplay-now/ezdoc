@@ -1,0 +1,59 @@
+---
+title: 快速开始
+description: 了解如何安装和使用 ezdoc 来管理你的文档
+---
+
+## 安装
+
+使用 pnpm 安装 ezdoc：
+
+```bash
+pnpm create ezdoc my-docs
+cd my-docs
+pnpm install
+```
+
+## 项目结构
+
+```
+my-docs/
+├── docs/               # 文档目录
+│   ├── docs.json       # 导航配置
+│   ├── getting-started.mdx
+│   └── guide/
+│       └── configuration.mdx
+├── ezdoc.config.ts     # 项目配置
+├── next.config.ts
+└── package.json
+```
+
+## 开始编写
+
+在 `docs/` 目录下创建 `.md` 或 `.mdx` 文件即可开始编写文档。
+
+### Frontmatter
+
+每个文档文件头部可以使用 YAML frontmatter：
+
+```yaml
+---
+title: 页面标题
+description: 页面描述
+---
+```
+
+### Markdown 基础语法
+
+ezdoc 支持完整的 **GFM**（GitHub Flavored Markdown）语法，包括表格、删除线、任务列表等。
+
+| 语法 | 效果 |
+|------|------|
+| `**粗体**` | **粗体** |
+| `*斜体*` | *斜体* |
+| `` `代码` `` | `代码` |
+| `~~删除线~~` | ~~删除线~~ |
+
+## 下一步
+
+- 阅读[配置指南](/docs/guide/configuration)了解更多配置选项
+- 查看[组件文档](/docs/components)了解内置组件的使用方法

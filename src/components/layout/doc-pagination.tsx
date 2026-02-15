@@ -1,0 +1,55 @@
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { NavItem } from "@/lib/docs";
+
+interface DocPaginationProps {
+  prev: NavItem | null;
+  next: NavItem | null;
+}
+
+export function DocPagination({ prev, next }: DocPaginationProps) {
+  if (!prev && !next) return null;
+
+  return (
+    <nav
+      className="mt-12 flex items-stretch gap-4 border-t border-border pt-6"
+      aria-label="Pagination"
+    >
+      {/* Previous page */}
+      {prev ? (
+        <Link
+          href={`/docs/${prev.path}`}
+          className="group flex flex-1 flex-col items-start rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
+        >
+          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">
+            <ChevronLeft className="size-3.5" />
+            Previous
+          </span>
+          <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+            {prev.title}
+          </span>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+
+      {/* Next page */}
+      {next ? (
+        <Link
+          href={`/docs/${next.path}`}
+          className="group flex flex-1 flex-col items-end rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
+        >
+          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">
+            Next
+            <ChevronRight className="size-3.5" />
+          </span>
+          <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+            {next.title}
+          </span>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+    </nav>
+  );
+}

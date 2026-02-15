@@ -1,0 +1,94 @@
+---
+title: 配置指南
+description: 了解 ezdoc.config.ts 的完整配置选项
+---
+
+## 配置文件
+
+ezdoc 的配置集中在项目根目录的 `ezdoc.config.ts` 文件中：
+
+```ts
+import { defineConfig } from "./src/lib/config";
+
+export default defineConfig({
+  site: {
+    title: "My Docs",
+    description: "我的文档站点",
+  },
+  docs: {
+    dir: "docs",
+    nav: "docs.json",
+  },
+  theme: {
+    defaultMode: "system",
+    primaryColor: "#3b82f6",
+  },
+});
+```
+
+## 站点配置
+
+`site` 字段定义站点的基本信息：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `title` | `string` | 站点标题（必填） |
+| `description` | `string` | 站点描述 |
+| `logo` | `string` | Logo 图片路径 |
+| `favicon` | `string` | Favicon 路径 |
+| `url` | `string` | 站点 URL |
+| `socials` | `Record<string, string>` | 社交链接 |
+
+## 文档配置
+
+`docs` 字段配置文档目录和导航：
+
+```ts
+docs: {
+  dir: "docs",      // 文档目录路径
+  nav: "docs.json", // 导航配置文件名
+}
+```
+
+### 导航配置
+
+在 `docs/docs.json` 中定义导航结构：
+
+```json
+{
+  "navigation": [
+    {
+      "group": "入门",
+      "pages": ["getting-started"]
+    },
+    {
+      "group": "指南",
+      "pages": [
+        { "title": "配置", "path": "guide/configuration" }
+      ]
+    }
+  ]
+}
+```
+
+## 主题配置
+
+```ts
+theme: {
+  defaultMode: "system",  // "light" | "dark" | "system"
+  primaryColor: "#3b82f6", // 主题色
+}
+```
+
+## 部署配置
+
+```ts
+deploy: {
+  basePath: "",   // 部署子路径
+  output: "out",  // 输出目录
+}
+```
+
+<Callout type="tip" title="环境变量覆盖">
+  可以使用 `EZDOC_BASE_PATH` 环境变量覆盖 `basePath` 配置，方便 CI/CD 环境中调整部署路径。
+</Callout>

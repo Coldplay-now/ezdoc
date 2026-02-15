@@ -1,0 +1,18 @@
+{
+  "navigation": [
+    {
+      "group": "入门",
+      "pages": ["getting-started"]
+    },
+    {
+      "group": "指南",
+      "pages": [
+        { "title": "配置指南", "path": "guide/configuration" }
+      ]
+    },
+    {
+      "group": "参考",
+      "pages": ["components"]
+    }
+  ]
+}
