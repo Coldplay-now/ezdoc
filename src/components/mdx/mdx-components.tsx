@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Mermaid } from "./mermaid";
+import { CodePre } from "./code-pre";
 
 // ---------------------------------------------------------------------------
 // Built-in custom MDX components (to be implemented in T6)
@@ -279,8 +280,6 @@ function Pre({
   ...props
 }: ComponentPropsWithoutRef<"pre"> & { "data-language"?: string }) {
   // Detect ```mermaid code blocks and route to the Mermaid renderer.
-  // rehype-pretty-code outputs <pre data-language="mermaid"> instead of
-  // the raw <code class="language-mermaid">, so we check both.
   const dataLang = props["data-language"];
 
   if (dataLang === "mermaid") {
@@ -304,19 +303,11 @@ function Pre({
     }
   }
 
+  // Delegate to client component for language tag + copy button
   return (
-    <pre
-      className={cn(
-        "my-6 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed",
-        // rehype-pretty-code sets its own background via [data-theme] when
-        // keepBackground is true. We set keepBackground: false in mdx.ts so
-        // our own styles take precedence.
-        className,
-      )}
-      {...props}
-    >
+    <CodePre language={dataLang} className={className} {...props}>
       {children}
-    </pre>
+    </CodePre>
   );
 }
 
