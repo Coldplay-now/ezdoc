@@ -1,7 +1,11 @@
 ---
 title: 内置组件
-description: ezdoc 提供的 MDX 内置组件
+description: ezdoc 提供的全部 MDX 内置组件概览
 ---
+
+ezdoc 提供两类 MDX 组件：**基础组件**（Callout、Tabs、代码块、公式、Mermaid）和**扩展组件**（Steps、Card、Accordion、FileTree、Badge、Video、ImageZoom、Tooltip）。
+
+扩展组件的详细用法和完整示例请参阅 [扩展组件](/docs/zh/guide/extended-components)。
 
 ## Callout 提示框
 
@@ -114,3 +118,45 @@ sequenceDiagram
     CI->>S: 部署静态文件
     S->>U: 访问文档
 ```
+
+## 扩展组件速览
+
+以下组件的完整用法请参阅 [扩展组件指南](/docs/zh/guide/extended-components)。
+
+### Steps 步骤
+
+<Steps>
+  <Step title="安装">安装项目依赖。</Step>
+  <Step title="配置">编辑配置文件。</Step>
+  <Step title="部署">构建并发布。</Step>
+</Steps>
+
+### Card 卡片
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="🚀">
+    5 分钟上手 ezdoc。
+  </Card>
+  <Card title="配置指南" icon="⚙️">
+    完整配置参考。
+  </Card>
+</CardGroup>
+
+### Accordion 折叠面板
+
+<Accordion>
+  <AccordionItem title="支持哪些语法？">
+    完整支持 GFM、KaTeX 数学公式、Mermaid 图表。
+  </AccordionItem>
+  <AccordionItem title="如何添加新页面？">
+    创建 `.mdx` 文件，在 `docs.json` 中注册路径。
+  </AccordionItem>
+</Accordion>
+
+### Badge 徽章
+
+<Badge>默认</Badge> <Badge variant="success">稳定</Badge> <Badge variant="warning">实验性</Badge> <Badge variant="error">已废弃</Badge>
+
+### Tooltip 悬浮提示
+
+将鼠标悬浮在 <Tooltip content="Model Context Protocol">MCP</Tooltip> 或 <Tooltip content="Markdown + JSX 混合格式">MDX</Tooltip> 上查看提示。

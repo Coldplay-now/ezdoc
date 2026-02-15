@@ -10,6 +10,14 @@ import { CodePre } from "./code-pre";
 // ---------------------------------------------------------------------------
 import { Callout } from "./callout";
 import { Tabs, TabItem } from "./tabs";
+import { Steps, Step } from "./steps";
+import { Card, CardGroup } from "./card";
+import { Accordion, AccordionItem } from "./accordion";
+import { FileTree } from "./file-tree";
+import { Badge } from "./badge";
+import { Video } from "./video";
+import { ImageZoom } from "./image-zoom";
+import { Tooltip } from "./tooltip";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -429,4 +437,16 @@ export const components = {
   Callout,
   Tabs,
   TabItem,
+  // ── Extended components ──
+  Steps,
+  Step,
+  Card,
+  CardGroup,
+  Accordion,
+  AccordionItem,
+  FileTree,
+  Badge,
+  Video,
+  ImageZoom,
+  Tooltip,
 };
