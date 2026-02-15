@@ -28,9 +28,24 @@ export interface VersionsConfig {
   list?: string[];
 }
 
+export interface ServerConfig {
+  /** 服务器 IP 或域名 */
+  host?: string;
+  /** SSH 端口，默认 22 */
+  port?: number;
+  /** SSH 用户名，默认 root */
+  user?: string;
+  /** 服务器上的部署路径，如 /var/www/docs */
+  path?: string;
+}
+
 export interface DeployConfig {
+  /** 部署目标: "github" | "server" | "both"，默认 "github" */
+  target?: "github" | "server" | "both";
   basePath?: string;
   output?: string;
+  /** 服务器部署配置，target 为 "server" 或 "both" 时需要 */
+  server?: ServerConfig;
 }
 
 export interface EzdocConfig {
@@ -48,7 +63,7 @@ const defaults: Omit<Required<EzdocConfig>, "site"> & { site: SiteConfig } = {
   theme: { defaultMode: "system", primaryColor: "#3b82f6" },
   i18n: { defaultLocale: "zh", locales: ["zh"] },
   versions: { current: undefined, list: [] },
-  deploy: { basePath: "", output: "out" },
+  deploy: { target: "github", basePath: "", output: "out" },
 };
 
 export function defineConfig(config: EzdocConfig): Required<EzdocConfig> {

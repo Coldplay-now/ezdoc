@@ -82,12 +82,88 @@ theme: {
 
 ## 部署配置
 
+`deploy` 字段控制构建输出和部署目标：
+
 ```ts
 deploy: {
-  basePath: "",   // 部署子路径
-  output: "out",  // 输出目录
+  target: "github", // "github" | "server" | "both"
+  basePath: "",      // 部署子路径
+  output: "out",     // 输出目录
 }
 ```
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `target` | `"github" \| "server" \| "both"` | `"github"` | 部署目标 |
+| `basePath` | `string` | `""` | 部署子路径（如 `/ezdoc`） |
+| `output` | `string` | `"out"` | 构建输出目录 |
+| `server` | `ServerConfig` | — | 服务器配置，target 为 `server` 或 `both` 时需要 |
+
+### 部署目标
+
+<Tabs defaultValue="github">
+  <TabItem label="GitHub Pages" value="github">
+    默认选项，推送到 `main` 分支时自动通过 GitHub Actions 构建并部署到 GitHub Pages。
+
+    ```ts
+    deploy: {
+      target: "github",
+      basePath: "",  // 根路径部署时留空
+    }
+    ```
+
+    <Callout type="info" title="前置步骤">
+      需要在 GitHub 仓库 Settings → Pages 中将 Source 设为 **GitHub Actions**。
+    </Callout>
+  </TabItem>
+
+  <TabItem label="自有服务器" value="server">
+    通过 rsync + SSH 部署到你自己的服务器：
+
+    ```ts
+    deploy: {
+      target: "server",
+      server: {
+        host: "your-server.com",
+        port: 22,
+        user: "root",
+        path: "/var/www/docs",
+      },
+    }
+    ```
+
+    还需要在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
+
+    | Secret | 说明 |
+    |--------|------|
+    | `SERVER_HOST` | 服务器 IP 或域名 |
+    | `SERVER_PORT` | SSH 端口（默认 22） |
+    | `SERVER_USER` | SSH 用户名 |
+    | `SERVER_SSH_KEY` | SSH 私钥 |
+  </TabItem>
+
+  <TabItem label="同时部署" value="both">
+    同时部署到 GitHub Pages 和自有服务器：
+
+    ```ts
+    deploy: {
+      target: "both",
+      basePath: "",
+      server: {
+        host: "your-server.com",
+        port: 22,
+        user: "root",
+        path: "/var/www/docs",
+      },
+    }
+    ```
+
+    <Callout type="warning" title="注意 basePath">
+      GitHub Pages 通常需要子路径（如 `/ezdoc`），而服务器部署通常在根路径。
+      CI 中 GitHub Pages 构建会通过 `EZDOC_BASE_PATH` 环境变量单独设置，不影响服务器部署。
+    </Callout>
+  </TabItem>
+</Tabs>
 
 <Callout type="tip" title="环境变量覆盖">
   可以使用 `EZDOC_BASE_PATH` 环境变量覆盖 `basePath` 配置，方便 CI/CD 环境中调整部署路径。

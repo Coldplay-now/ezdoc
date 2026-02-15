@@ -1,0 +1,80 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: server-deploy
+  cancel-in-progress: true
+
+jobs:
+  check-target:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy-server: ${{ steps.read-config.outputs.deploy-server }}
+      server-path: ${{ steps.read-config.outputs.server-path }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read deploy target from config
+        id: read-config
+        run: |
+          TARGET=$(node -e "
+            const fs = require('fs');
+            const content = fs.readFileSync('ezdoc.config.ts', 'utf-8');
+            const match = content.match(/target:\s*['\"](\w+)['\"]/);
+            console.log(match ? match[1] : 'github');
+          ")
+          if [ "$TARGET" = "server" ] || [ "$TARGET" = "both" ]; then
+            echo "deploy-server=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy-server=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Read server path from config
+          SERVER_PATH=$(node -e "
+            const fs = require('fs');
+            const content = fs.readFileSync('ezdoc.config.ts', 'utf-8');
+            const match = content.match(/path:\s*['\"]([^'\"]+)['\"]/);
+            console.log(match ? match[1] : '/var/www/docs');
+          ")
+          echo "server-path=$SERVER_PATH" >> "$GITHUB_OUTPUT"
+          echo "Deploy target: $TARGET → Server: $( [ "$TARGET" = "server" ] || [ "$TARGET" = "both" ] && echo yes || echo no )"
+
+  build-and-deploy:
+    needs: check-target
+    if: needs.check-target.outputs.deploy-server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+        # 服务器部署通常不需要 basePath（部署在根路径）
+        # 如需子路径，取消注释并设置:
+        # env:
+        #   EZDOC_BASE_PATH: /docs
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: out/
+          remote_path: ${{ needs.check-target.outputs.server-path }}/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_port: ${{ secrets.SERVER_PORT || 22 }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SERVER_SSH_KEY }}

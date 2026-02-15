@@ -27,7 +27,15 @@ export default defineConfig({
   },
 
   deploy: {
+    target: "github", // "github" | "server" | "both"
     basePath: "",
     output: "out",
+    // target 为 "server" 或 "both" 时填写
+    // server: {
+    //   host: "your-server.com",
+    //   port: 22,
+    //   user: "root",
+    //   path: "/var/www/docs",
+    // },
   },
 });
