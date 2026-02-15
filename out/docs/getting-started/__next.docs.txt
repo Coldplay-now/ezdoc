@@ -1,0 +1,5 @@
+1:"$Sreact.fragment"
+2:I[21250,["/_next/static/chunks/678f27fab54f479d.js","/_next/static/chunks/7714bd8eb2e177ab.js","/_next/static/chunks/d84be17a77c364cd.js"],"DocsLayoutShell"]
+3:I[3097,["/_next/static/chunks/6b5e7ab8c5cb29fa.js","/_next/static/chunks/3bc697f816e31030.js"],"default"]
+4:I[99299,["/_next/static/chunks/6b5e7ab8c5cb29fa.js","/_next/static/chunks/3bc697f816e31030.js"],"default"]
+0:{"buildId":"0Zm2_2spmRGxr1fKf7_Bv","rsc":["$","$1","c",{"children":[[["$","script","script-0",{"src":"/_next/static/chunks/7714bd8eb2e177ab.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/d84be17a77c364cd.js","async":true}]],["$","$L2",null,{"siteTitle":"ezdoc","githubUrl":"https://github.com/Coldplay-now/ezdoc","navigation":[{"group":"入门","pages":[{"title":"快速开始","path":"getting-started"}]},{"group":"指南","pages":[{"title":"配置指南","path":"guide/configuration"}]},{"group":"参考","pages":[{"title":"内置组件","path":"components"}]}],"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]}]]}],"loading":null,"isPartial":false}
