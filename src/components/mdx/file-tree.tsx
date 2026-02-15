@@ -2,13 +2,62 @@ import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
-/*  FileTree                                                           */
+/*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
 interface TreeNode {
   name: string;
   isFolder: boolean;
   children: TreeNode[];
+}
+
+/** JSON input format: nested arrays like ["folder/", ["child.txt"]] */
+type TreeInput = (string | TreeInput)[];
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Recursively extract plain text from React children. */
+function extractText(node: ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (node && typeof node === "object" && "props" in node) {
+    return extractText(
+      (node as { props: { children?: ReactNode } }).props.children
+    );
+  }
+  return "";
+}
+
+/* ------------------------------------------------------------------ */
+/*  Parsers                                                            */
+/* ------------------------------------------------------------------ */
+
+function parseJsonTree(items: TreeInput): TreeNode[] {
+  const result: TreeNode[] = [];
+  let i = 0;
+
+  while (i < items.length) {
+    const item = items[i];
+    if (typeof item === "string") {
+      const isFolder = item.endsWith("/");
+      const name = isFolder ? item.slice(0, -1) : item;
+      const node: TreeNode = { name, isFolder, children: [] };
+
+      if (isFolder && i + 1 < items.length && Array.isArray(items[i + 1])) {
+        node.children = parseJsonTree(items[i + 1] as TreeInput);
+        i += 2;
+      } else {
+        i += 1;
+      }
+      result.push(node);
+    } else {
+      i += 1;
+    }
+  }
+  return result;
 }
 
 function parseTreeText(text: string): TreeNode[] {
@@ -19,45 +68,31 @@ function parseTreeText(text: string): TreeNode[] {
   ];
 
   for (const line of lines) {
-    const trimmed = line.replace(/^[\s│├└─┬┤┼]*/, "");
-    const name = trimmed.trim();
+    const name = line.trim();
     if (!name) continue;
 
-    // Calculate indent level from leading spaces
     const indent = line.search(/\S/);
     const isFolder = name.endsWith("/");
     const cleanName = isFolder ? name.slice(0, -1) : name;
+    const node: TreeNode = { name: cleanName, isFolder, children: [] };
 
-    const node: TreeNode = {
-      name: cleanName,
-      isFolder,
-      children: [],
-    };
-
-    // Pop stack until we find a parent with smaller indent
     while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
       stack.pop();
     }
-
     stack[stack.length - 1].children.push(node);
 
     if (isFolder) {
       stack.push({ indent, children: node.children });
     }
   }
-
   return root;
 }
 
-function TreeItem({
-  node,
-  isLast,
-  depth,
-}: {
-  node: TreeNode;
-  isLast: boolean;
-  depth: number;
-}) {
+/* ------------------------------------------------------------------ */
+/*  TreeItem renderer                                                  */
+/* ------------------------------------------------------------------ */
+
+function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
   return (
     <li className="list-none">
       <div
@@ -98,7 +133,9 @@ function TreeItem({
         <span
           className={cn(
             "font-mono text-[13px]",
-            node.isFolder ? "font-medium text-foreground" : "text-foreground/80"
+            node.isFolder
+              ? "font-medium text-foreground"
+              : "text-foreground/80"
           )}
         >
           {node.name}
@@ -106,13 +143,8 @@ function TreeItem({
       </div>
       {node.children.length > 0 && (
         <ul className="m-0 p-0">
-          {node.children.map((child, i) => (
-            <TreeItem
-              key={child.name}
-              node={child}
-              isLast={i === node.children.length - 1}
-              depth={depth + 1}
-            />
+          {node.children.map((child) => (
+            <TreeItem key={child.name} node={child} depth={depth + 1} />
           ))}
         </ul>
       )}
@@ -120,18 +152,55 @@ function TreeItem({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  FileTree component                                                 */
+/* ------------------------------------------------------------------ */
+
 interface FileTreeProps {
-  children: ReactNode;
+  /**
+   * JSON string describing the tree. Format:
+   * '["folder/", ["child.txt", "subfolder/", ["nested.ts"]], "root-file.txt"]'
+   * Folders end with "/", followed by an array of children.
+   */
+  json?: string;
+  children?: ReactNode;
 }
 
-export function FileTree({ children }: FileTreeProps) {
-  // Extract plain text from children
-  const text =
-    typeof children === "string"
-      ? children
-      : String(children ?? "");
+export function FileTree({ json, children }: FileTreeProps) {
+  let nodes: TreeNode[];
 
-  const tree = parseTreeText(text);
+  if (json) {
+    // Parse JSON string prop (MDX only supports static string attributes)
+    try {
+      const parsed = JSON.parse(json) as TreeInput;
+      nodes = parseJsonTree(parsed);
+    } catch {
+      nodes = [];
+    }
+  } else {
+    // Fallback: extract text from children
+    let text = "";
+    if (typeof children === "string") {
+      text = children;
+    } else if (Array.isArray(children)) {
+      text = children
+        .map((c) => (typeof c === "string" ? c : extractText(c)))
+        .join("");
+    } else if (children) {
+      text = extractText(children);
+    }
+
+    const trimmed = text.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        nodes = parseJsonTree(JSON.parse(trimmed) as TreeInput);
+      } catch {
+        nodes = parseTreeText(text);
+      }
+    } else {
+      nodes = parseTreeText(text);
+    }
+  }
 
   return (
     <div className="my-6 overflow-hidden rounded-lg border border-border bg-muted/20">
@@ -153,13 +222,8 @@ export function FileTree({ children }: FileTreeProps) {
         </span>
       </div>
       <ul className="m-0 p-2">
-        {tree.map((node, i) => (
-          <TreeItem
-            key={node.name}
-            node={node}
-            isLast={i === tree.length - 1}
-            depth={0}
-          />
+        {nodes.map((node) => (
+          <TreeItem key={node.name} node={node} depth={0} />
         ))}
       </ul>
     </div>

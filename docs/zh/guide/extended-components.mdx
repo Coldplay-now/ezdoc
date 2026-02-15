@@ -120,43 +120,15 @@ description: ezdoc 提供的扩展 MDX 组件：Steps、Card、Accordion、FileT
 
 使用 `FileTree` 展示项目目录结构：
 
-<FileTree>
-{`docs/
-  zh/
-    docs.json
-    getting-started.mdx
-    components.mdx
-    guide/
-      configuration.mdx
-      deployment.mdx
-      extended-components.mdx
-  en/
-    docs.json
-    getting-started.mdx
-ezdoc.config.ts
-package.json`}
-</FileTree>
+<FileTree json='["docs/", ["zh/", ["docs.json", "getting-started.mdx", "components.mdx", "guide/", ["configuration.mdx", "deployment.mdx", "extended-components.mdx"]], "en/", ["docs.json", "getting-started.mdx"]], "ezdoc.config.ts", "package.json"]' />
 
 ### 语法
 
-```mdx
-<FileTree>
-{`src/
-  components/
-    mdx/
-      callout.tsx
-      tabs.tsx
-  lib/
-    utils.ts
-  app/
-    page.tsx
-package.json`}
-</FileTree>
-```
+通过 `json` 属性传入 JSON 格式的数组字符串。文件夹名称以 `/` 结尾，紧跟一个子数组表示其内容。文件名不带 `/`。
 
-<Callout type="tip" title="提示">
-  文件夹名称以 `/` 结尾，文件名称不带 `/`。缩进使用两个空格表示层级。
-</Callout>
+```mdx
+<FileTree json='["src/", ["components/", ["Button.tsx", "Header.tsx"], "lib/", ["utils.ts"]], "package.json"]' />
+```
 
 ---
 
@@ -191,25 +163,21 @@ package.json`}
 
 使用 `Video` 嵌入视频内容，自动识别 YouTube、Bilibili 或本地视频：
 
-### YouTube
+### YouTube 视频
 
-```mdx
-<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="示例视频" />
-```
+<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="YouTube 示例视频" />
 
-### Bilibili
+### Bilibili 视频
 
-```mdx
-<Video src="https://www.bilibili.com/video/BV1xx411c7mD" title="示例视频" />
-```
-
-### 本地视频
-
-```mdx
-<Video src="/videos/demo.mp4" title="演示视频" />
-```
+<Video src="https://www.bilibili.com/video/BV1xx411c7mD" title="Bilibili 示例视频" />
 
 ### 语法
+
+```mdx
+<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="视频标题" />
+<Video src="https://www.bilibili.com/video/BV1xx411c7mD" title="视频标题" />
+<Video src="/videos/demo.mp4" title="本地视频" />
+```
 
 | 属性 | 说明 | 默认值 |
 |------|------|--------|
