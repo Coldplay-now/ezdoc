@@ -26,7 +26,7 @@ description: ezdoc 支持的完整 Markdown 语法参考
 ## 链接
 
 - 外部链接：[GitHub](https://github.com) 会自动在新窗口打开
-- 内部链接：[返回快速开始](/docs/getting-started) 使用客户端路由
+- 内部链接：[返回快速开始](/docs/zh/getting-started) 使用客户端路由
 - 锚点链接：[跳转到表格章节](#表格)
 
 ## 引用
@@ -113,9 +113,9 @@ pnpm dev
 
 ## 图片
 
-图片支持懒加载和圆角边框样式：
+标准 Markdown 图片语法：
 
-![Next.js Logo](https://nextjs.org/icons/next.svg)
+![GitHub Mark](https://github.githubassets.com/favicons/favicon.svg)
 
 ## 分隔线
 
