@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Github, Menu, X, Search, Languages } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
+import { cn } from "@/lib/utils";
 import type { LocaleEntry } from "@/lib/config";
 
 interface HeaderProps {
@@ -181,11 +182,12 @@ function LanguageSwitcher({
             <button
               key={l.code}
               type="button"
-              className={`flex w-full items-center px-3 py-1.5 text-sm transition-colors ${
+              className={cn(
+                "flex w-full items-center px-3 py-1.5 text-sm transition-colors",
                 l.code === locale
                   ? "bg-primary/10 font-medium text-primary"
                   : "text-foreground hover:bg-muted"
-              }`}
+              )}
               onClick={() => {
                 switchLocale(l.code);
                 setOpen(false);

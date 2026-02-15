@@ -80,6 +80,11 @@ export async function getDocBySlug(
   const docsDir = getDocsDir(locale);
   const basePath = path.join(process.cwd(), docsDir);
 
+  // 路径安全校验：防止路径遍历攻击
+  if (slug.includes("..") || slug.startsWith("/")) {
+    throw new Error(`Invalid slug: ${slug}`);
+  }
+
   // slug 可能是 "getting-started" 或 "guide/intro" 等形式
   const slugParts = slug.split("/");
   const mdxPath = path.join(basePath, ...slugParts) + ".mdx";

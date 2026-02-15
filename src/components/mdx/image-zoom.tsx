@@ -65,6 +65,7 @@ export function ImageZoom({ src, alt, width, height }: ImageZoomProps) {
             src={src}
             alt={alt ?? ""}
             className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
           />
           <button
             type="button"

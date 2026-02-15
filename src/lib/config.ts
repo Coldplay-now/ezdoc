@@ -90,7 +90,10 @@ export async function loadConfig(): Promise<Required<EzdocConfig>> {
   try {
     const mod = await import("@config");
     _config = mod.default;
-  } catch {
+  } catch (err) {
+    console.warn(
+      `[ezdoc] Failed to load ezdoc.config.ts, using defaults: ${err instanceof Error ? err.message : err}`
+    );
     _config = defineConfig({ site: { title: "ezdoc" } });
   }
 

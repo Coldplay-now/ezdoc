@@ -2,6 +2,11 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { NavItem } from "@/lib/docs";
 
+const i18nLabels: Record<string, { prev: string; next: string }> = {
+  zh: { prev: "上一页", next: "下一页" },
+  en: { prev: "Previous", next: "Next" },
+};
+
 interface DocPaginationProps {
   prev: NavItem | null;
   next: NavItem | null;
@@ -10,6 +15,8 @@ interface DocPaginationProps {
 
 export function DocPagination({ prev, next, locale }: DocPaginationProps) {
   if (!prev && !next) return null;
+
+  const labels = i18nLabels[locale] ?? i18nLabels.en;
 
   return (
     <nav
@@ -25,7 +32,7 @@ export function DocPagination({ prev, next, locale }: DocPaginationProps) {
         >
           <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">
             <ChevronLeft className="size-3.5" />
-            Previous
+            {labels.prev}
           </span>
           <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
             {prev.title}
@@ -42,7 +49,7 @@ export function DocPagination({ prev, next, locale }: DocPaginationProps) {
           className="group flex flex-1 flex-col items-end rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
         >
           <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">
-            Next
+            {labels.next}
             <ChevronRight className="size-3.5" />
           </span>
           <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">

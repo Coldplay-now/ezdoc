@@ -124,12 +124,27 @@ export function getNavigation(locale: string): NavGroup[] {
 /** 解析 docs.json 导航配置文件 */
 function parseNavFile(navFile: string, locale: string): NavGroup[] {
   const raw = fs.readFileSync(navFile, "utf-8");
-  const json = JSON.parse(raw) as {
+
+  let json: {
     navigation: Array<{
       group: string;
       pages: Array<string | { title: string; path: string }>;
     }>;
   };
+
+  try {
+    json = JSON.parse(raw);
+  } catch (err) {
+    console.error(
+      `[ezdoc] Failed to parse ${navFile}: ${err instanceof Error ? err.message : err}`
+    );
+    return [];
+  }
+
+  if (!json.navigation || !Array.isArray(json.navigation)) {
+    console.error(`[ezdoc] Invalid docs.json: missing "navigation" array in ${navFile}`);
+    return [];
+  }
 
   return json.navigation.map((group) => ({
     group: group.group,
@@ -206,10 +221,11 @@ export function extractToc(rawContent: string): TocItem[] {
 
 /** 生成标题 id：中文保留，空格转 -，转小写 */
 function generateId(text: string): string {
-  return text
+  const id = text
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^\w\u4e00-\u9fff-]/g, "");
+  return id || "section";
 }
 
 // ─── getPrevNext ────────────────────────────────────────────

@@ -89,9 +89,7 @@ export function Mermaid({ chart }: MermaidProps) {
         className={
           status === "ready"
             ? "flex justify-center overflow-x-auto rounded-lg border border-border bg-muted/30 p-4 [&>svg]:mx-auto [&>svg]:block"
-            : status === "error"
-              ? "hidden"
-              : "hidden"
+            : "hidden"
         }
       />
 

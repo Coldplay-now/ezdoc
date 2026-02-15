@@ -70,6 +70,19 @@ async function loadPagefind(): Promise<Pagefind> {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+/** Maximum number of search results to display */
+const MAX_RESULTS = 10;
+
+/** Number of results to load in the first parallel batch for fast display */
+const FIRST_BATCH_SIZE = 3;
+
+/** Debounce delay (ms) before triggering a search after typing */
+const SEARCH_DEBOUNCE_MS = 200;
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -138,28 +151,26 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         const search = await pagefind.search(query);
         if (cancelled) return;
 
-        const topResults = search.results.slice(0, 10);
+        const topResults = search.results.slice(0, MAX_RESULTS);
         if (topResults.length === 0) {
           setResults([]);
           setActiveIndex(0);
           return;
         }
 
-        // Progressive loading: first batch (3) in parallel for fast display,
+        // Progressive loading: first batch in parallel for fast display,
         // then load remaining one by one to limit concurrent requests.
-        // At 100+ docs this avoids blasting 10 parallel fragment fetches.
-        const FIRST_BATCH = 3;
         const loaded: PagefindResultData[] = [];
 
         const firstBatch = await Promise.all(
-          topResults.slice(0, FIRST_BATCH).map((r) => r.data())
+          topResults.slice(0, FIRST_BATCH_SIZE).map((r) => r.data())
         );
         if (cancelled) return;
         loaded.push(...firstBatch);
         setResults([...loaded]);
         setActiveIndex(0);
 
-        for (let i = FIRST_BATCH; i < topResults.length; i++) {
+        for (let i = FIRST_BATCH_SIZE; i < topResults.length; i++) {
           if (cancelled) return;
           const data = await topResults[i].data();
           if (cancelled) return;
@@ -171,7 +182,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }, 200); // debounce 200ms
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;

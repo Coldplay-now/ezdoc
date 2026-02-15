@@ -76,7 +76,6 @@ export function CodePre({ language, className, children, ...props }: CodePreProp
       className="group/code my-6 relative overflow-hidden rounded-lg border border-border bg-muted/30"
     >
       {/* Top bar: language tag + copy button */}
-      {(label || true) && (
         <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-muted/50">
           <span className="select-none text-xs font-medium text-muted-foreground">
             {label ?? ""}
@@ -97,7 +96,6 @@ export function CodePre({ language, className, children, ...props }: CodePreProp
             )}
           </button>
         </div>
-      )}
 
       {/* Code area — the inner <pre> gets stripped of its own visual styles */}
       <pre
