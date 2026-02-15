@@ -161,7 +161,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const navigateTo = useCallback(
     (url: string) => {
       onOpenChange(false);
-      router.push(url);
+      // Pagefind URLs include basePath (e.g. /ezdoc/docs/zh/...), but
+      // router.push() adds basePath automatically, so strip it first.
+      const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+      const cleanUrl = basePath && url.startsWith(basePath)
+        ? url.slice(basePath.length) || "/"
+        : url;
+      router.push(cleanUrl);
     },
     [onOpenChange, router]
   );

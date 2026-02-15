@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Github, Menu, X, Search, Languages } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
@@ -138,6 +138,7 @@ function LanguageSwitcher({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -154,11 +155,12 @@ function LanguageSwitcher({
 
   function switchLocale(targetLocale: string) {
     // Replace /docs/{currentLocale}/... with /docs/{targetLocale}/...
+    // usePathname() returns path without basePath, router.push() handles basePath automatically
     const newPath = pathname.replace(
       `/docs/${locale}/`,
       `/docs/${targetLocale}/`,
     );
-    window.location.href = newPath;
+    router.push(newPath);
   }
 
   return (
