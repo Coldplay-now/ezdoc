@@ -9,6 +9,7 @@ import type { NavGroup } from "@/lib/docs";
 interface SidebarProps {
   navigation: NavGroup[];
   currentSlug: string;
+  locale: string;
   open?: boolean;
   onClose?: () => void;
 }
@@ -16,6 +17,7 @@ interface SidebarProps {
 export function Sidebar({
   navigation,
   currentSlug,
+  locale,
   open = false,
   onClose,
 }: SidebarProps) {
@@ -117,7 +119,7 @@ export function Sidebar({
                       return (
                         <li key={page.path}>
                           <Link
-                            href={`/docs/${page.path}`}
+                            href={`/docs/${locale}/${page.path}`}
                             className={cn(
                               "block rounded-md px-2 py-1.5 text-sm transition-colors",
                               isActive

@@ -1,19 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Github, Menu, X, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Github, Menu, X, Search, Languages } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
+import type { LocaleEntry } from "@/lib/config";
 
 interface HeaderProps {
   siteTitle: string;
   githubUrl?: string;
   menuOpen?: boolean;
   onMenuToggle?: (open: boolean) => void;
+  locale: string;
+  locales: LocaleEntry[];
 }
 
-export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle }: HeaderProps) {
+export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const toggleMenu = useCallback(() => {
@@ -106,6 +110,10 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle }:
               </a>
             )}
 
+            {locales.length > 1 && (
+              <LanguageSwitcher locale={locale} locales={locales} />
+            )}
+
             <ThemeToggle />
           </div>
         </div>
@@ -113,5 +121,79 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle }:
 
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// LanguageSwitcher
+// ---------------------------------------------------------------------------
+
+function LanguageSwitcher({
+  locale,
+  locales,
+}: {
+  locale: string;
+  locales: LocaleEntry[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }
+  }, [open]);
+
+  function switchLocale(targetLocale: string) {
+    // Replace /docs/{currentLocale}/... with /docs/{targetLocale}/...
+    const newPath = pathname.replace(
+      `/docs/${locale}/`,
+      `/docs/${targetLocale}/`,
+    );
+    window.location.href = newPath;
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        onClick={() => setOpen(!open)}
+        aria-label="Switch language"
+        aria-expanded={open}
+      >
+        <Languages className="size-5" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 min-w-[8rem] rounded-lg border border-border bg-background py-1 shadow-lg z-50">
+          {locales.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              className={`flex w-full items-center px-3 py-1.5 text-sm transition-colors ${
+                l.code === locale
+                  ? "bg-primary/10 font-medium text-primary"
+                  : "text-foreground hover:bg-muted"
+              }`}
+              onClick={() => {
+                switchLocale(l.code);
+                setOpen(false);
+              }}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

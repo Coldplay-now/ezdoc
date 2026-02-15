@@ -23,7 +23,10 @@ export default defineConfig({
 
   i18n: {
     defaultLocale: "zh",
-    locales: ["zh"],
+    locales: [
+      { code: "zh", label: "中文" },
+      { code: "en", label: "English" },
+    ],
   },
 
   deploy: {

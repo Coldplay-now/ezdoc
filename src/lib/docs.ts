@@ -28,12 +28,25 @@ export interface DocMeta {
   slug: string;
 }
 
+// ─── locale 辅助 ────────────────────────────────────────────
+
+/** 获取默认 locale */
+export function getDefaultLocale(): string {
+  return ezdocConfig.i18n?.defaultLocale ?? "zh";
+}
+
+/** 获取所有 locale code 列表 */
+export function getAllLocales(): string[] {
+  const locales = ezdocConfig.i18n?.locales ?? [{ code: "zh", label: "中文" }];
+  return locales.map((l) => (typeof l === "string" ? l : l.code));
+}
+
 // ─── 内部工具 ───────────────────────────────────────────────
 
-/** 从配置获取 docs 目录路径 */
-function getDocsDir(): string {
+/** 从配置获取 docs 目录路径（locale 子目录） */
+function getDocsDir(locale: string): string {
   const dir = ezdocConfig.docs?.dir ?? "docs";
-  return path.join(process.cwd(), dir);
+  return path.join(process.cwd(), dir, locale);
 }
 
 /** 从配置获取导航配置文件名 */
@@ -53,8 +66,8 @@ function readFrontmatter(filePath: string): Record<string, unknown> {
 }
 
 /** 根据 slug 解析出文件的绝对路径（尝试 .mdx 和 .md） */
-function resolveDocFile(slug: string): string | null {
-  const docsDir = getDocsDir();
+function resolveDocFile(slug: string, locale: string): string | null {
+  const docsDir = getDocsDir(locale);
   const extensions = [".mdx", ".md"];
   for (const ext of extensions) {
     const filePath = path.join(docsDir, slug + ext);
@@ -64,8 +77,8 @@ function resolveDocFile(slug: string): string | null {
 }
 
 /** 从文件系统读取 slug 对应的标题 */
-function getTitleForSlug(slug: string): string {
-  const filePath = resolveDocFile(slug);
+function getTitleForSlug(slug: string, locale: string): string {
+  const filePath = resolveDocFile(slug, locale);
   if (!filePath) return slug;
   const fm = readFrontmatter(filePath);
   return (fm.title as string) || path.basename(slug);
@@ -93,23 +106,23 @@ function scanMarkdownFiles(dir: string, base: string = ""): string[] {
 
 /**
  * 获取导航结构。
- * 优先从 docs.json（文件名可配置）读取，不存在则回退到目录扫描。
+ * 优先从 docs/{locale}/docs.json 读取，不存在则回退到目录扫描。
  */
-export function getNavigation(): NavGroup[] {
-  const docsDir = getDocsDir();
+export function getNavigation(locale: string): NavGroup[] {
+  const docsDir = getDocsDir(locale);
   const navFile = path.join(docsDir, getNavFileName());
 
   // 1. 优先读取 docs.json
   if (fs.existsSync(navFile)) {
-    return parseNavFile(navFile);
+    return parseNavFile(navFile, locale);
   }
 
   // 2. 回退：扫描目录
-  return buildNavFromDirectory(docsDir);
+  return buildNavFromDirectory(docsDir, locale);
 }
 
 /** 解析 docs.json 导航配置文件 */
-function parseNavFile(navFile: string): NavGroup[] {
+function parseNavFile(navFile: string, locale: string): NavGroup[] {
   const raw = fs.readFileSync(navFile, "utf-8");
   const json = JSON.parse(raw) as {
     navigation: Array<{
@@ -123,7 +136,7 @@ function parseNavFile(navFile: string): NavGroup[] {
     pages: group.pages.map((page): NavItem => {
       if (typeof page === "string") {
         return {
-          title: getTitleForSlug(page),
+          title: getTitleForSlug(page, locale),
           path: page,
         };
       }
@@ -133,7 +146,7 @@ function parseNavFile(navFile: string): NavGroup[] {
 }
 
 /** 扫描目录构建导航（回退方案） */
-function buildNavFromDirectory(docsDir: string): NavGroup[] {
+function buildNavFromDirectory(docsDir: string, locale: string): NavGroup[] {
   const slugs = scanMarkdownFiles(docsDir);
   slugs.sort((a, b) => a.localeCompare(b));
 
@@ -147,7 +160,7 @@ function buildNavFromDirectory(docsDir: string): NavGroup[] {
       groups.set(groupName, []);
     }
 
-    const filePath = resolveDocFile(slug);
+    const filePath = resolveDocFile(slug, locale);
     const fm = filePath ? readFrontmatter(filePath) : {};
     const title = (fm.title as string) || path.basename(slug);
 

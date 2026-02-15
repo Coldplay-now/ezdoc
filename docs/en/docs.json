@@ -1,0 +1,16 @@
+{
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        { "title": "Building Skills for Claude", "path": "guide/building-skills-for-claude" }
+      ]
+    }
+  ]
+}

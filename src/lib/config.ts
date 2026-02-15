@@ -18,9 +18,14 @@ export interface ThemeConfig {
   accentColor?: string;
 }
 
+export interface LocaleEntry {
+  code: string;
+  label: string;
+}
+
 export interface I18nConfig {
   defaultLocale?: string;
-  locales?: string[];
+  locales?: LocaleEntry[];
 }
 
 export interface VersionsConfig {
@@ -61,7 +66,7 @@ const defaults: Omit<Required<EzdocConfig>, "site"> & { site: SiteConfig } = {
   site: { title: "ezdoc" },
   docs: { dir: "docs", nav: "docs.json" },
   theme: { defaultMode: "system", primaryColor: "#3b82f6" },
-  i18n: { defaultLocale: "zh", locales: ["zh"] },
+  i18n: { defaultLocale: "zh", locales: [{ code: "zh", label: "中文" }] },
   versions: { current: undefined, list: [] },
   deploy: { target: "github", basePath: "", output: "out" },
 };

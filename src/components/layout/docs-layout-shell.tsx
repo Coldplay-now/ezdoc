@@ -5,11 +5,14 @@ import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import type { NavGroup } from "@/lib/docs";
+import type { LocaleEntry } from "@/lib/config";
 
 interface DocsLayoutShellProps {
   siteTitle: string;
   githubUrl?: string;
   navigation: NavGroup[];
+  locale: string;
+  locales: LocaleEntry[];
   children: ReactNode;
 }
 
@@ -22,14 +25,19 @@ export function DocsLayoutShell({
   siteTitle,
   githubUrl,
   navigation,
+  locale,
+  locales,
   children,
 }: DocsLayoutShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   // Extract the current slug from the pathname
-  // pathname is like /docs/getting-started or /docs/guide/intro
-  const currentSlug = pathname.replace(/^\/docs\/?/, "").replace(/\/$/, "");
+  // pathname is like /docs/zh/getting-started or /docs/en/guide/intro
+  const prefix = `/docs/${locale}/`;
+  const currentSlug = pathname.startsWith(prefix)
+    ? pathname.slice(prefix.length).replace(/\/$/, "")
+    : pathname.replace(/^\/docs\/?/, "").replace(/\/$/, "");
 
   const handleMenuToggle = useCallback((open: boolean) => {
     setSidebarOpen(open);
@@ -53,11 +61,14 @@ export function DocsLayoutShell({
         githubUrl={githubUrl}
         menuOpen={sidebarOpen}
         onMenuToggle={handleMenuToggle}
+        locale={locale}
+        locales={locales}
       />
       <div className="flex flex-1">
         <Sidebar
           navigation={navigation}
           currentSlug={currentSlug}
+          locale={locale}
           open={sidebarOpen}
           onClose={handleSidebarClose}
         />

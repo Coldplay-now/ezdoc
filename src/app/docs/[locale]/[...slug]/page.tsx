@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDocBySlug, getAllSlugs } from "@/lib/mdx";
-import { getNavigation, extractToc, getPrevNext } from "@/lib/docs";
+import { getNavigation, getAllLocales, extractToc, getPrevNext } from "@/lib/docs";
 import { components } from "@/components/mdx/mdx-components";
 import { TableOfContents } from "@/components/layout/toc";
 import { DocPagination } from "@/components/layout/doc-pagination";
@@ -11,10 +11,17 @@ import ezdocConfig from "@config";
 // Static params generation for static export
 // ---------------------------------------------------------------------------
 export function generateStaticParams() {
-  const slugs = getAllSlugs();
-  return slugs.map((slug) => ({
-    slug: slug.split("/"),
-  }));
+  const locales = getAllLocales();
+  const params: { locale: string; slug: string[] }[] = [];
+
+  for (const locale of locales) {
+    const slugs = getAllSlugs(locale);
+    for (const slug of slugs) {
+      params.push({ locale, slug: slug.split("/") });
+    }
+  }
+
+  return params;
 }
 
 // ---------------------------------------------------------------------------
@@ -23,21 +30,20 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string[] }>;
+  params: Promise<{ locale: string; slug: string[] }>;
 }): Promise<Metadata> {
-  const { slug: slugParts } = await params;
+  const { locale, slug: slugParts } = await params;
   const slug = slugParts.join("/");
-
   const siteUrl = ezdocConfig.site.url ?? "";
 
   try {
-    const doc = await getDocBySlug(slug, {
+    const doc = await getDocBySlug(slug, locale, {
       components: components as Record<string, React.ComponentType<unknown>>,
     });
 
     const title = doc.frontmatter.title ?? slug;
     const description = doc.frontmatter.description;
-    const pageUrl = siteUrl ? `${siteUrl}/docs/${slug}` : undefined;
+    const pageUrl = siteUrl ? `${siteUrl}/docs/${locale}/${slug}` : undefined;
 
     return {
       title,
@@ -60,21 +66,21 @@ export async function generateMetadata({
 export default async function DocPage({
   params,
 }: {
-  params: Promise<{ slug: string[] }>;
+  params: Promise<{ locale: string; slug: string[] }>;
 }) {
-  const { slug: slugParts } = await params;
+  const { locale, slug: slugParts } = await params;
   const slug = slugParts.join("/");
 
   let doc;
   try {
-    doc = await getDocBySlug(slug, {
+    doc = await getDocBySlug(slug, locale, {
       components: components as Record<string, React.ComponentType<unknown>>,
     });
   } catch {
     notFound();
   }
 
-  const navigation = getNavigation();
+  const navigation = getNavigation(locale);
   const toc = extractToc(doc.raw);
   const { prev, next } = getPrevNext(slug, navigation);
 
@@ -102,7 +108,7 @@ export default async function DocPage({
         </article>
 
         {/* Prev / Next navigation */}
-        <DocPagination prev={prev} next={next} />
+        <DocPagination prev={prev} next={next} locale={locale} />
       </main>
 
       {/* Right TOC */}

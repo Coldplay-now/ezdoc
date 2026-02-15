@@ -5,9 +5,10 @@ import type { NavItem } from "@/lib/docs";
 interface DocPaginationProps {
   prev: NavItem | null;
   next: NavItem | null;
+  locale: string;
 }
 
-export function DocPagination({ prev, next }: DocPaginationProps) {
+export function DocPagination({ prev, next, locale }: DocPaginationProps) {
   if (!prev && !next) return null;
 
   return (
@@ -18,7 +19,7 @@ export function DocPagination({ prev, next }: DocPaginationProps) {
       {/* Previous page */}
       {prev ? (
         <Link
-          href={`/docs/${prev.path}`}
+          href={`/docs/${locale}/${prev.path}`}
           className="group flex flex-1 flex-col items-start rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
         >
           <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">
@@ -36,7 +37,7 @@ export function DocPagination({ prev, next }: DocPaginationProps) {
       {/* Next page */}
       {next ? (
         <Link
-          href={`/docs/${next.path}`}
+          href={`/docs/${locale}/${next.path}`}
           className="group flex flex-1 flex-col items-end rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
         >
           <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1">

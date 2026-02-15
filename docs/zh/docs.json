@@ -25,7 +25,7 @@
     {
       "group": "示例",
       "pages": [
-        { "title": "Building Skills for Claude", "path": "guide/building-skills-for-claude" }
+        { "title": "为 Claude 构建 Skill", "path": "guide/building-skills-for-claude" }
       ]
     }
   ]
