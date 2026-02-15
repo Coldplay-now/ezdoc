@@ -53,7 +53,7 @@ export function Tabs({ defaultValue, children }: TabsProps) {
       {/* Tab buttons */}
       <div
         className={cn(
-          "flex gap-1 border-b border-zinc-200 dark:border-zinc-800"
+          "flex gap-1 border-b border-border"
         )}
         role="tablist"
       >
@@ -69,10 +69,10 @@ export function Tabs({ defaultValue, children }: TabsProps) {
               onClick={() => setActive(value)}
               className={cn(
                 "relative px-3.5 pb-2.5 pt-2 text-sm font-medium transition-colors",
-                "outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:rounded-sm",
+                "outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:rounded-sm",
                 isActive
-                  ? "text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {label}
@@ -81,7 +81,7 @@ export function Tabs({ defaultValue, children }: TabsProps) {
                 <span
                   className={cn(
                     "absolute inset-x-0 -bottom-px h-0.5 rounded-full",
-                    "bg-zinc-900 dark:bg-zinc-100"
+                    "bg-foreground"
                   )}
                 />
               )}
@@ -102,7 +102,7 @@ export function Tabs({ defaultValue, children }: TabsProps) {
               role="tabpanel"
               aria-hidden={!isActive}
               style={{ display: isActive ? undefined : "none" }}
-              className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300"
+              className="text-sm leading-relaxed text-foreground/90"
             >
               {item.props.children}
             </div>

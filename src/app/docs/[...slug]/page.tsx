@@ -81,7 +81,7 @@ export default async function DocPage({
   return (
     <>
       {/* Main content area */}
-      <main className="min-w-0 flex-1 px-6 py-8 lg:px-10 lg:py-10 max-w-3xl mx-auto xl:mx-0 xl:max-w-none">
+      <main id="main-content" className="min-w-0 flex-1 px-6 py-8 lg:px-10 lg:py-10 max-w-3xl mx-auto xl:mx-0 xl:max-w-none">
         {/* Article header */}
         {doc.frontmatter.title && (
           <div className="mb-8">

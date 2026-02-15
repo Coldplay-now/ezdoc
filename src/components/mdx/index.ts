@@ -1,4 +1,4 @@
 export { Callout } from "./callout";
 export { Tabs, TabItem } from "./tabs";
-export { CodeBlock } from "./code-block";
+export { CodePre } from "./code-pre";
 export { Mermaid } from "./mermaid";

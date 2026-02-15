@@ -6,11 +6,10 @@ import { Mermaid } from "./mermaid";
 import { CodePre } from "./code-pre";
 
 // ---------------------------------------------------------------------------
-// Built-in custom MDX components (to be implemented in T6)
+// Built-in custom MDX components
 // ---------------------------------------------------------------------------
 import { Callout } from "./callout";
 import { Tabs, TabItem } from "./tabs";
-import { CodeBlock } from "./code-block";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -311,27 +310,44 @@ function Pre({
   );
 }
 
-function Code({ className, ...props }: ComponentPropsWithoutRef<"code">) {
-  // If this <code> lives inside a <pre> (code block), rehype-pretty-code
-  // handles its styling. We only add minimal resets here.
-  const isInlineCode = !className?.includes("language-");
+function Code({
+  className,
+  ...props
+}: ComponentPropsWithoutRef<"code"> & { "data-language"?: string }) {
+  // Block code inside <pre>: rehype-pretty-code sets data-language on <code>.
+  // Also check className for the classic language-* pattern.
+  const isBlockCode =
+    props["data-language"] || className?.includes("language-");
 
-  if (isInlineCode) {
+  if (isBlockCode) {
     return (
       <code
-        className={cn(
-          "relative rounded-md border border-border bg-muted/60 px-[0.4em] py-[0.2em] font-mono text-[0.875em] text-foreground",
-          className,
-        )}
+        className={cn("grid font-mono text-[0.875em]", className)}
         {...props}
       />
     );
   }
 
-  // Block code inside <pre>: let rehype-pretty-code do the heavy lifting.
+  // Inline code: styled with background + border
   return (
     <code
-      className={cn("grid font-mono text-[0.875em]", className)}
+      className={cn(
+        "relative rounded-md border border-border bg-muted/60 px-[0.4em] py-[0.2em] font-mono text-[0.875em] text-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Figure (rehype-pretty-code wraps code blocks in <figure>)
+// ---------------------------------------------------------------------------
+
+function Figure({ className, ...props }: ComponentPropsWithoutRef<"figure">) {
+  return (
+    <figure
+      className={cn("m-0 not-prose", className)}
       {...props}
     />
   );
@@ -404,6 +420,7 @@ export const components = {
   td: Td,
   pre: Pre,
   code: Code,
+  figure: Figure,
   img: Img,
   hr: Hr,
   strong: Strong,
@@ -412,5 +429,4 @@ export const components = {
   Callout,
   Tabs,
   TabItem,
-  CodeBlock,
 };
