@@ -9,20 +9,16 @@ import { SearchDialog } from "@/components/search/search-dialog";
 interface HeaderProps {
   siteTitle: string;
   githubUrl?: string;
+  menuOpen?: boolean;
   onMenuToggle?: (open: boolean) => void;
 }
 
-export function Header({ siteTitle, githubUrl, onMenuToggle }: HeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const toggleMenu = useCallback(() => {
-    setMenuOpen((prev) => {
-      const next = !prev;
-      onMenuToggle?.(next);
-      return next;
-    });
-  }, [onMenuToggle]);
+    onMenuToggle?.(!menuOpen);
+  }, [onMenuToggle, menuOpen]);
 
   /* ---------- Global Cmd/Ctrl+K shortcut ---------- */
   useEffect(() => {

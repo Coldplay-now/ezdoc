@@ -44,6 +44,7 @@ export function DocsLayoutShell({
       <Header
         siteTitle={siteTitle}
         githubUrl={githubUrl}
+        menuOpen={sidebarOpen}
         onMenuToggle={handleMenuToggle}
       />
       <div className="flex flex-1">

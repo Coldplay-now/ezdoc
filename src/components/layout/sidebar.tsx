@@ -47,9 +47,21 @@ export function Sidebar({
     });
   }, []);
 
-  // Close mobile sidebar when navigating
+  // Close mobile sidebar and expand the group containing the current page
   useEffect(() => {
     onClose?.();
+    // Expand the group containing the new current page
+    for (const group of navigation) {
+      if (group.pages.some((page) => page.path === currentSlug)) {
+        setExpandedGroups((prev) => {
+          if (prev.has(group.group)) return prev;
+          const next = new Set(prev);
+          next.add(group.group);
+          return next;
+        });
+        break;
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSlug]);
 
