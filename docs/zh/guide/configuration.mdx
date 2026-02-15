@@ -1,96 +1,191 @@
 ---
 title: 配置指南
-description: 了解 ezdoc.config.ts 的完整配置选项
+description: ezdoc.config.ts 完整配置项详解
 ---
 
-## 配置文件
+ezdoc 的所有配置集中在项目根目录的 `ezdoc.config.ts` 文件中。通过 `defineConfig` 函数获得完整的类型提示。
 
-ezdoc 的配置集中在项目根目录的 `ezdoc.config.ts` 文件中：
+## 完整示例
 
 ```ts
 import { defineConfig } from "./src/lib/config";
 
 export default defineConfig({
   site: {
-    title: "My Docs",
-    description: "我的文档站点",
+    title: "ezdoc",
+    description: "基于 Git 仓库的文档管理与渲染系统",
+    url: "https://coldplay-now.github.io/ezdoc",
+    favicon: "/favicon.ico",
+    socials: {
+      github: "https://github.com/Coldplay-now/ezdoc",
+    },
   },
+
   docs: {
     dir: "docs",
     nav: "docs.json",
   },
+
   theme: {
     defaultMode: "system",
     primaryColor: "#3b82f6",
   },
+
+  i18n: {
+    defaultLocale: "zh",
+    locales: [
+      { code: "zh", label: "中文" },
+      { code: "en", label: "English" },
+    ],
+  },
+
+  deploy: {
+    target: "github",
+    basePath: "",
+    output: "out",
+  },
 });
 ```
 
-## 站点配置
+---
 
-`site` 字段定义站点的基本信息：
+## site — 站点信息
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `title` | `string` | 站点标题（必填） |
-| `description` | `string` | 站点描述 |
-| `logo` | `string` | Logo 图片路径 |
-| `favicon` | `string` | Favicon 路径 |
-| `url` | `string` | 站点 URL |
-| `socials` | `Record<string, string>` | 社交链接 |
-
-## 文档配置
-
-`docs` 字段配置文档目录和导航：
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|:----:|--------|------|
+| `title` | `string` | **是** | `"ezdoc"` | 站点标题，显示在 Header 左侧和浏览器标签 |
+| `description` | `string` | 否 | — | 站点描述，用于首页和 SEO |
+| `url` | `string` | 否 | — | 站点完整 URL，用于 sitemap 和 OG 标签 |
+| `logo` | `string` | 否 | — | Logo 图片路径 |
+| `favicon` | `string` | 否 | — | Favicon 路径 |
+| `socials` | `Record<string, string>` | 否 | — | 社交链接，目前支持 `github` |
 
 ```ts
-docs: {
-  dir: "docs",      // 文档目录路径
-  nav: "docs.json", // 导航配置文件名
+site: {
+  title: "My Docs",
+  description: "项目文档",
+  url: "https://example.com",
+  favicon: "/favicon.ico",
+  socials: {
+    github: "https://github.com/your-org/your-repo",
+  },
 }
 ```
 
-### 导航配置
+---
 
-在 `docs/docs.json` 中定义导航结构：
+## docs — 文档配置
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `dir` | `string` | `"docs"` | 文档根目录路径（相对于项目根目录） |
+| `nav` | `string` | `"docs.json"` | 导航配置文件名 |
+
+实际的文档文件路径为 `{dir}/{locale}/`，导航配置为 `{dir}/{locale}/{nav}`。
+
+例如默认配置下：
+- 中文文档：`docs/zh/*.mdx`
+- 中文导航：`docs/zh/docs.json`
+- 英文文档：`docs/en/*.mdx`
+- 英文导航：`docs/en/docs.json`
+
+<Callout type="info" title="回退机制">
+  如果某个语言目录下没有 `docs.json`，系统会自动扫描该目录的所有 `.md`/`.mdx` 文件并按目录分组生成导航。但建议始终手动编写 `docs.json` 以获得精确控制。
+</Callout>
+
+---
+
+## theme — 主题配置
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `defaultMode` | `"light" \| "dark" \| "system"` | `"system"` | 默认主题模式 |
+| `primaryColor` | `string` | `"#3b82f6"` | 主题色（十六进制） |
+| `accentColor` | `string` | — | 强调色 |
+
+```ts
+theme: {
+  defaultMode: "system",  // 跟随系统偏好
+  primaryColor: "#8b5cf6", // 紫色主题
+}
+```
+
+主题切换按钮位于 Header 右侧，用户的选择会保存在 `localStorage` 中。
+
+---
+
+## i18n — 国际化配置
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `defaultLocale` | `string` | `"zh"` | 默认语言代码 |
+| `locales` | `LocaleEntry[]` | `[{ code: "zh", label: "中文" }]` | 支持的语言列表 |
+
+每个 `LocaleEntry` 包含：
+
+| 字段 | 说明 |
+|------|------|
+| `code` | 语言代码，对应 `docs/` 下的子目录名（如 `zh`、`en`、`ja`） |
+| `label` | 显示名称，用于 Header 的语言切换下拉菜单 |
+
+### 添加新语言
+
+以添加日语为例：
+
+**1. 更新配置：**
+
+```ts
+i18n: {
+  defaultLocale: "zh",
+  locales: [
+    { code: "zh", label: "中文" },
+    { code: "en", label: "English" },
+    { code: "ja", label: "日本語" },     // 新增
+  ],
+}
+```
+
+**2. 创建文档目录：**
+
+```text
+docs/ja/
+├── docs.json
+└── getting-started.mdx
+```
+
+**3. 编写导航配置** `docs/ja/docs.json`：
 
 ```json
 {
   "navigation": [
     {
-      "group": "入门",
+      "group": "はじめに",
       "pages": ["getting-started"]
-    },
-    {
-      "group": "指南",
-      "pages": [
-        { "title": "配置", "path": "guide/configuration" }
-      ]
     }
   ]
 }
 ```
 
-## 主题配置
+完成后，Header 语言切换器会自动显示三种语言。
 
-```ts
-theme: {
-  defaultMode: "system",  // "light" | "dark" | "system"
-  primaryColor: "#3b82f6", // 主题色
-}
-```
+### URL 结构
 
-## 部署配置
+所有语言都带路径前缀：
 
-`deploy` 字段控制构建输出和部署目标：
+| URL | 说明 |
+|-----|------|
+| `/docs` | 自动重定向到 `/docs/{defaultLocale}/{firstPage}` |
+| `/docs/zh/getting-started` | 中文文档 |
+| `/docs/en/getting-started` | 英文文档 |
+| `/docs/ja/getting-started` | 日文文档 |
 
-```ts
-deploy: {
-  target: "github", // "github" | "server" | "both"
-  basePath: "",      // 部署子路径
-  output: "out",     // 输出目录
-}
-```
+<Callout type="tip" title="语言独立">
+  每种语言的文档内容和导航结构完全独立，不要求内容一一对应。中文可以有 10 篇文档，英文只有 3 篇，完全没问题。
+</Callout>
+
+---
+
+## deploy — 部署配置
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -99,27 +194,28 @@ deploy: {
 | `output` | `string` | `"out"` | 构建输出目录 |
 | `server` | `ServerConfig` | — | 服务器配置，target 为 `server` 或 `both` 时需要 |
 
-### 部署目标
+### ServerConfig
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `host` | `string` | — | 服务器 IP 或域名 |
+| `port` | `number` | `22` | SSH 端口 |
+| `user` | `string` | `"root"` | SSH 用户名 |
+| `path` | `string` | — | 服务器上的部署路径 |
 
 <Tabs defaultValue="github">
   <TabItem label="GitHub Pages" value="github">
-    默认选项，推送到 `main` 分支时自动通过 GitHub Actions 构建并部署到 GitHub Pages。
-
     ```ts
     deploy: {
       target: "github",
-      basePath: "",  // 根路径部署时留空
+      basePath: "",
     }
     ```
 
-    <Callout type="info" title="前置步骤">
-      需要在 GitHub 仓库 Settings → Pages 中将 Source 设为 **GitHub Actions**。
-    </Callout>
+    推送到 `main` 分支时，GitHub Actions 自动构建并部署。需要在仓库 Settings → Pages 中将 Source 设为 **GitHub Actions**。
   </TabItem>
 
   <TabItem label="自有服务器" value="server">
-    通过 rsync + SSH 部署到你自己的服务器：
-
     ```ts
     deploy: {
       target: "server",
@@ -132,23 +228,13 @@ deploy: {
     }
     ```
 
-    还需要在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
-
-    | Secret | 说明 |
-    |--------|------|
-    | `SERVER_HOST` | 服务器 IP 或域名 |
-    | `SERVER_PORT` | SSH 端口（默认 22） |
-    | `SERVER_USER` | SSH 用户名 |
-    | `SERVER_SSH_KEY` | SSH 私钥 |
+    需要在仓库 Settings → Secrets 中配置 `SERVER_HOST`、`SERVER_PORT`、`SERVER_USER`、`SERVER_SSH_KEY`。
   </TabItem>
 
   <TabItem label="同时部署" value="both">
-    同时部署到 GitHub Pages 和自有服务器：
-
     ```ts
     deploy: {
       target: "both",
-      basePath: "",
       server: {
         host: "your-server.com",
         port: 22,
@@ -158,13 +244,37 @@ deploy: {
     }
     ```
 
-    <Callout type="warning" title="注意 basePath">
-      GitHub Pages 通常需要子路径（如 `/ezdoc`），而服务器部署通常在根路径。
-      CI 中 GitHub Pages 构建会通过 `EZDOC_BASE_PATH` 环境变量单独设置，不影响服务器部署。
+    <Callout type="warning" title="basePath 差异">
+      GitHub Pages 通常需要子路径（如 `/ezdoc`），而服务器部署通常在根路径。CI 中会通过 `EZDOC_BASE_PATH` 环境变量分别处理，不需要在配置中设置 `basePath`。
     </Callout>
   </TabItem>
 </Tabs>
 
-<Callout type="tip" title="环境变量覆盖">
-  可以使用 `EZDOC_BASE_PATH` 环境变量覆盖 `basePath` 配置，方便 CI/CD 环境中调整部署路径。
-</Callout>
+### 环境变量
+
+| 变量 | 说明 |
+|------|------|
+| `EZDOC_BASE_PATH` | 覆盖 `basePath` 配置，CI/CD 中常用 |
+
+```bash
+# 本地构建时模拟 GitHub Pages 子路径
+EZDOC_BASE_PATH=/ezdoc pnpm build
+```
+
+---
+
+## 默认值一览
+
+不显式配置时，ezdoc 使用以下默认值：
+
+```ts
+{
+  site: { title: "ezdoc" },
+  docs: { dir: "docs", nav: "docs.json" },
+  theme: { defaultMode: "system", primaryColor: "#3b82f6" },
+  i18n: { defaultLocale: "zh", locales: [{ code: "zh", label: "中文" }] },
+  deploy: { target: "github", basePath: "", output: "out" },
+}
+```
+
+只有 `site.title` 是真正需要配置的，其余字段均有合理默认值。

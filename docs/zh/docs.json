@@ -11,6 +11,8 @@
       "group": "指南",
       "pages": [
         { "title": "配置指南", "path": "guide/configuration" },
+        { "title": "文档目录与导航", "path": "guide/docs-structure" },
+        { "title": "部署指南", "path": "guide/deployment" },
         { "title": "交互组件", "path": "guide/interactive-components" },
         { "title": "代码与语法高亮", "path": "guide/code-highlighting" },
         { "title": "数学公式与图表", "path": "guide/math-and-diagrams" }
