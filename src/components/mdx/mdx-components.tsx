@@ -277,9 +277,21 @@ function Pre({
   className,
   children,
   ...props
-}: ComponentPropsWithoutRef<"pre">) {
+}: ComponentPropsWithoutRef<"pre"> & { "data-language"?: string }) {
   // Detect ```mermaid code blocks and route to the Mermaid renderer.
-  // The MDX pipeline produces <pre><code class="language-mermaid">...</code></pre>
+  // rehype-pretty-code outputs <pre data-language="mermaid"> instead of
+  // the raw <code class="language-mermaid">, so we check both.
+  const dataLang = props["data-language"];
+
+  if (dataLang === "mermaid") {
+    const chart = extractText(
+      children && typeof children === "object" && "props" in children
+        ? (children as ReactElement<{ children?: ReactNode }>).props.children
+        : children,
+    );
+    return <Mermaid chart={chart} />;
+  }
+
   if (children && typeof children === "object" && "props" in children) {
     const child = children as ReactElement<{
       className?: string;
