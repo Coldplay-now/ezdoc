@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Search, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup } from "@/lib/docs";
 
@@ -36,6 +36,23 @@ export function Sidebar({
     }
     return initial;
   });
+
+  // Filter search
+  const [filterQuery, setFilterQuery] = useState("");
+
+  const filteredNavigation = useMemo(() => {
+    const q = filterQuery.trim().toLowerCase();
+    if (!q) return navigation;
+    return navigation
+      .map((group) => {
+        if (group.group.toLowerCase().includes(q)) return group;
+        const matched = group.pages.filter((p) =>
+          p.title.toLowerCase().includes(q),
+        );
+        return matched.length ? { ...group, pages: matched } : null;
+      })
+      .filter(Boolean) as NavGroup[];
+  }, [navigation, filterQuery]);
 
   const toggleGroup = useCallback((group: string) => {
     setExpandedGroups((prev) => {
@@ -91,8 +108,39 @@ export function Sidebar({
         )}
       >
         <nav className="px-3 py-4" aria-label="Documentation navigation">
-          {navigation.map((group) => {
-            const isExpanded = expandedGroups.has(group.group);
+          {/* Filter input */}
+          <div className="relative mb-3 px-2">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="筛选页面..."
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              className="w-full rounded-md border border-border bg-muted/50 py-1.5 pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            {filterQuery && (
+              <button
+                type="button"
+                onClick={() => setFilterQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="清除筛选"
+              >
+                <XIcon className="size-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Empty state */}
+          {filteredNavigation.length === 0 && filterQuery && (
+            <p className="px-2 py-4 text-center text-sm text-muted-foreground">
+              未找到匹配的页面
+            </p>
+          )}
+
+          {filteredNavigation.map((group) => {
+            const isExpanded = filterQuery
+              ? true
+              : expandedGroups.has(group.group);
 
             return (
               <div key={group.group} className="mb-4">

@@ -63,6 +63,8 @@ export function DocsLayoutShell({
         onMenuToggle={handleMenuToggle}
         locale={locale}
         locales={locales}
+        navigation={navigation}
+        currentSlug={currentSlug}
       />
       <div className="flex flex-1">
         <Sidebar

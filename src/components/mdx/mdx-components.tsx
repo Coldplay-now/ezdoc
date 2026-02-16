@@ -18,6 +18,7 @@ import { Badge } from "./badge";
 import { Video } from "./video";
 import { ImageZoom } from "./image-zoom";
 import { Tooltip } from "./tooltip";
+import { CodeGroup } from "./code-group";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -442,4 +443,5 @@ export const components = {
   Video,
   ImageZoom,
   Tooltip,
+  CodeGroup,
 };

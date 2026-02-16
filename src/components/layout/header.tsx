@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 import type { LocaleEntry } from "@/lib/config";
+import type { NavGroup } from "@/lib/docs";
 
 interface HeaderProps {
   siteTitle: string;
@@ -16,10 +17,17 @@ interface HeaderProps {
   onMenuToggle?: (open: boolean) => void;
   locale: string;
   locales: LocaleEntry[];
+  navigation?: NavGroup[];
+  currentSlug?: string;
 }
 
-export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales }: HeaderProps) {
+export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales, navigation, currentSlug }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Determine which navigation group is currently active
+  const activeGroup = navigation?.find((g) =>
+    g.pages.some((p) => p.path === currentSlug),
+  )?.group;
 
   const toggleMenu = useCallback(() => {
     onMenuToggle?.(!menuOpen);
@@ -73,6 +81,33 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, l
               {siteTitle}
             </Link>
           </div>
+
+          {/* Center: Navigation tabs (desktop only) */}
+          {navigation && navigation.length > 0 && (
+            <nav className="hidden lg:flex items-stretch gap-1" aria-label="Content groups">
+              {navigation.map((group) => {
+                const isActive = group.group === activeGroup;
+                const firstPage = group.pages[0];
+                return (
+                  <Link
+                    key={group.group}
+                    href={`/docs/${locale}/${firstPage.path}`}
+                    className={cn(
+                      "relative flex items-center px-3 text-sm font-medium transition-colors",
+                      isActive
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {group.group}
+                    {isActive && (
+                      <span className="absolute inset-x-1 bottom-0 h-0.5 rounded-full bg-primary" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">

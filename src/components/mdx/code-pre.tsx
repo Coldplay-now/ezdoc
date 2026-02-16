@@ -3,6 +3,7 @@
 import { type ReactNode, useRef, useState, useCallback } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { langLabels } from "@/lib/lang-labels";
 
 interface CodePreProps {
   language?: string;
@@ -10,47 +11,6 @@ interface CodePreProps {
   children: ReactNode;
   [key: string]: unknown;
 }
-
-const langLabels: Record<string, string> = {
-  ts: "TypeScript",
-  tsx: "TSX",
-  js: "JavaScript",
-  jsx: "JSX",
-  typescript: "TypeScript",
-  javascript: "JavaScript",
-  py: "Python",
-  python: "Python",
-  rust: "Rust",
-  go: "Go",
-  sql: "SQL",
-  yaml: "YAML",
-  yml: "YAML",
-  json: "JSON",
-  css: "CSS",
-  html: "HTML",
-  bash: "Shell",
-  sh: "Shell",
-  shell: "Shell",
-  zsh: "Shell",
-  powershell: "PowerShell",
-  md: "Markdown",
-  mdx: "MDX",
-  diff: "Diff",
-  graphql: "GraphQL",
-  toml: "TOML",
-  xml: "XML",
-  java: "Java",
-  c: "C",
-  cpp: "C++",
-  csharp: "C#",
-  swift: "Swift",
-  kotlin: "Kotlin",
-  ruby: "Ruby",
-  php: "PHP",
-  lua: "Lua",
-  docker: "Dockerfile",
-  dockerfile: "Dockerfile",
-};
 
 export function CodePre({ language, className, children, ...props }: CodePreProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);

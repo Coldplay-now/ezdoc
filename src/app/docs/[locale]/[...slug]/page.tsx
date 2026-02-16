@@ -87,28 +87,30 @@ export default async function DocPage({
   return (
     <>
       {/* Main content area */}
-      <main id="main-content" data-pagefind-body className="min-w-0 flex-1 px-6 py-8 lg:px-10 lg:py-10 max-w-3xl mx-auto xl:mx-0 xl:max-w-none">
-        {/* Article header */}
-        {doc.frontmatter.title && (
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              {doc.frontmatter.title}
-            </h1>
-            {doc.frontmatter.description && (
-              <p className="mt-2 text-lg text-muted-foreground">
-                {doc.frontmatter.description}
-              </p>
-            )}
-          </div>
-        )}
+      <main id="main-content" data-pagefind-body className="min-w-0 flex-1 px-6 py-8 lg:px-10 lg:py-10">
+        <div className="max-w-3xl">
+          {/* Article header */}
+          {doc.frontmatter.title && (
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                {doc.frontmatter.title}
+              </h1>
+              {doc.frontmatter.description && (
+                <p className="mt-2 text-lg text-muted-foreground">
+                  {doc.frontmatter.description}
+                </p>
+              )}
+            </div>
+          )}
 
-        {/* MDX content */}
-        <article className="prose prose-neutral dark:prose-invert max-w-none">
-          {doc.content}
-        </article>
+          {/* MDX content */}
+          <article className="prose prose-neutral dark:prose-invert max-w-none">
+            {doc.content}
+          </article>
 
-        {/* Prev / Next navigation */}
-        <DocPagination prev={prev} next={next} locale={locale} />
+          {/* Prev / Next navigation */}
+          <DocPagination prev={prev} next={next} locale={locale} />
+        </div>
       </main>
 
       {/* Right TOC */}
