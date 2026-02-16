@@ -19,6 +19,15 @@ export default async function LocaleDocsLayout({
   const githubUrl = ezdocConfig.site.socials?.github;
   const locales = ezdocConfig.i18n?.locales ?? [{ code: "zh", label: "中文" }];
 
+  // Build a map of locale -> { slugs, firstPage } for safe language switching
+  const localeSlugs: Record<string, { slugs: string[]; firstPage: string }> = {};
+  for (const l of locales) {
+    const nav = l.code === locale ? navigation : getNavigation(l.code);
+    const allSlugs = nav.flatMap((g) => g.pages.map((p) => p.path));
+    const firstPage = allSlugs[0] ?? "";
+    localeSlugs[l.code] = { slugs: allSlugs, firstPage };
+  }
+
   return (
     <DocsLayoutShell
       siteTitle={siteTitle}
@@ -26,6 +35,7 @@ export default async function LocaleDocsLayout({
       navigation={navigation}
       locale={locale}
       locales={locales}
+      localeSlugs={localeSlugs}
     >
       {children}
     </DocsLayoutShell>

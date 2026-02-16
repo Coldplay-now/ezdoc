@@ -9,6 +9,7 @@ import { SearchDialog } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 import type { LocaleEntry } from "@/lib/config";
 import type { NavGroup } from "@/lib/docs";
+import type { LocaleSlugsMap } from "./docs-layout-shell";
 
 interface HeaderProps {
   siteTitle: string;
@@ -19,9 +20,10 @@ interface HeaderProps {
   locales: LocaleEntry[];
   navigation?: NavGroup[];
   currentSlug?: string;
+  localeSlugs?: LocaleSlugsMap;
 }
 
-export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales, navigation, currentSlug }: HeaderProps) {
+export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales, navigation, currentSlug, localeSlugs }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Determine which navigation group is currently active
@@ -124,7 +126,7 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, l
             )}
 
             {locales.length > 1 && (
-              <LanguageSwitcher locale={locale} locales={locales} />
+              <LanguageSwitcher locale={locale} locales={locales} currentSlug={currentSlug} localeSlugs={localeSlugs} />
             )}
 
             <ThemeToggle />
@@ -144,13 +146,16 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, l
 function LanguageSwitcher({
   locale,
   locales,
+  currentSlug,
+  localeSlugs,
 }: {
   locale: string;
   locales: LocaleEntry[];
+  currentSlug?: string;
+  localeSlugs?: LocaleSlugsMap;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
   const router = useRouter();
 
   // Close dropdown when clicking outside
@@ -167,13 +172,15 @@ function LanguageSwitcher({
   }, [open]);
 
   function switchLocale(targetLocale: string) {
-    // Replace /docs/{currentLocale}/... with /docs/{targetLocale}/...
-    // usePathname() returns path without basePath, router.push() handles basePath automatically
-    const newPath = pathname.replace(
-      `/docs/${locale}/`,
-      `/docs/${targetLocale}/`,
-    );
-    router.push(newPath);
+    const target = localeSlugs?.[targetLocale];
+    // If the current slug exists in the target locale, navigate to it directly
+    if (target && currentSlug && target.slugs.includes(currentSlug)) {
+      router.push(`/docs/${targetLocale}/${currentSlug}`);
+    } else {
+      // Otherwise fall back to the target locale's first page
+      const fallback = target?.firstPage ?? "";
+      router.push(`/docs/${targetLocale}/${fallback}`);
+    }
   }
 
   return (

@@ -7,12 +7,15 @@ import { Sidebar } from "./sidebar";
 import type { NavGroup } from "@/lib/docs";
 import type { LocaleEntry } from "@/lib/config";
 
+export type LocaleSlugsMap = Record<string, { slugs: string[]; firstPage: string }>;
+
 interface DocsLayoutShellProps {
   siteTitle: string;
   githubUrl?: string;
   navigation: NavGroup[];
   locale: string;
   locales: LocaleEntry[];
+  localeSlugs?: LocaleSlugsMap;
   children: ReactNode;
 }
 
@@ -27,6 +30,7 @@ export function DocsLayoutShell({
   navigation,
   locale,
   locales,
+  localeSlugs,
   children,
 }: DocsLayoutShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -65,6 +69,7 @@ export function DocsLayoutShell({
         locales={locales}
         navigation={navigation}
         currentSlug={currentSlug}
+        localeSlugs={localeSlugs}
       />
       <div className="flex flex-1">
         <Sidebar
