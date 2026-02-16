@@ -1,103 +1,139 @@
-export interface SiteConfig {
-  title: string;
-  description?: string;
-  logo?: string;
-  favicon?: string;
-  url?: string;
-  socials?: Record<string, string>;
-}
+import { z } from "zod";
 
-export interface DocsConfig {
-  dir?: string;
-  nav?: string;
-}
+// ─── Zod Schemas ─────────────────────────────────────────────
 
-export interface ThemeConfig {
-  defaultMode?: "light" | "dark" | "system";
-  primaryColor?: string;
-  accentColor?: string;
-}
+const localeSchema = z.object({
+  code: z.string().min(1),
+  label: z.string().min(1),
+});
 
-export interface LocaleEntry {
-  code: string;
-  label: string;
-}
+const siteSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  logo: z.string().optional(),
+  favicon: z.string().optional(),
+  url: z.string().url().optional(),
+  socials: z.record(z.string(), z.string().url()).optional(),
+});
 
-export interface I18nConfig {
-  defaultLocale?: string;
-  locales?: LocaleEntry[];
-}
+const docsSchema = z.object({
+  dir: z.string().default("docs"),
+  nav: z.string().default("docs.json"),
+}).default(() => ({ dir: "docs", nav: "docs.json" }));
 
-export interface VersionsConfig {
-  current?: string;
-  list?: string[];
-}
+const themeSchema = z.object({
+  defaultMode: z.enum(["light", "dark", "system"]).default("system"),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{3,8}$/).optional(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{3,8}$/).optional(),
+}).default(() => ({ defaultMode: "system" as const }));
 
-export interface ServerConfig {
-  /** 服务器 IP 或域名 */
-  host?: string;
-  /** SSH 端口，默认 22 */
-  port?: number;
-  /** SSH 用户名，默认 root */
-  user?: string;
-  /** 服务器上的部署路径，如 /var/www/docs */
-  path?: string;
-}
+const i18nSchema = z.object({
+  defaultLocale: z.string().min(1).default("zh"),
+  locales: z.array(localeSchema).min(1).default([{ code: "zh", label: "中文" }]),
+}).default(() => ({ defaultLocale: "zh", locales: [{ code: "zh", label: "中文" }] }));
 
-export interface DeployConfig {
-  /** 部署目标: "github" | "server" | "both"，默认 "github" */
-  target?: "github" | "server" | "both";
-  basePath?: string;
-  output?: string;
-  /** 服务器部署配置，target 为 "server" 或 "both" 时需要 */
-  server?: ServerConfig;
-}
+const versionsSchema = z.object({
+  current: z.string().optional(),
+  list: z.array(z.string()).default([]),
+}).default(() => ({ list: [] }));
 
-export interface EzdocConfig {
-  site: SiteConfig;
-  docs?: DocsConfig;
-  theme?: ThemeConfig;
-  i18n?: I18nConfig;
-  versions?: VersionsConfig;
-  deploy?: DeployConfig;
-}
+const serverSchema = z.object({
+  host: z.string().min(1),
+  port: z.number().int().positive().default(22),
+  user: z.string().min(1).default("root"),
+  path: z.string().min(1),
+});
 
-const defaults: Omit<Required<EzdocConfig>, "site"> & { site: SiteConfig } = {
-  site: { title: "ezdoc" },
-  docs: { dir: "docs", nav: "docs.json" },
-  theme: { defaultMode: "system", primaryColor: "#3b82f6" },
-  i18n: { defaultLocale: "zh", locales: [{ code: "zh", label: "中文" }] },
-  versions: { current: undefined, list: [] },
-  deploy: { target: "github", basePath: "", output: "out" },
-};
+const overridesSchema = z.object({
+  dir: z.string().default("overrides"),
+}).default(() => ({ dir: "overrides" }));
 
-export function defineConfig(config: EzdocConfig): Required<EzdocConfig> {
-  return {
-    site: { ...defaults.site, ...config.site },
-    docs: { ...defaults.docs, ...config.docs },
-    theme: { ...defaults.theme, ...config.theme },
-    i18n: { ...defaults.i18n, ...config.i18n },
-    versions: { ...defaults.versions, ...config.versions },
-    deploy: { ...defaults.deploy, ...config.deploy },
-  } as Required<EzdocConfig>;
-}
+const deploySchema = z.object({
+  target: z.enum(["github", "server", "both"]).default("github"),
+  basePath: z.string().default(""),
+  output: z.string().default("out"),
+  server: serverSchema.optional(),
+}).default(() => ({ target: "github" as const, basePath: "", output: "out" }));
 
-let _config: Required<EzdocConfig> | null = null;
+const ezdocSchema = z.object({
+  site: siteSchema,
+  docs: docsSchema,
+  theme: themeSchema,
+  i18n: i18nSchema,
+  versions: versionsSchema,
+  deploy: deploySchema,
+  overrides: overridesSchema,
+}).refine(
+  (data) => {
+    if (data.deploy.target === "server" || data.deploy.target === "both") {
+      return data.deploy.server != null;
+    }
+    return true;
+  },
+  {
+    message: "deploy.target 包含 \"server\" 时，deploy.server 配置必填",
+    path: ["deploy", "server"],
+  },
+);
 
-export async function loadConfig(): Promise<Required<EzdocConfig>> {
-  if (_config) return _config;
+// ─── 从 Zod schema 推导的类型 ─────────────────────────────────
 
-  try {
-    const mod = await import("@config");
-    _config = mod.default;
-  } catch (err) {
-    console.warn(
-      `[ezdoc] Failed to load ezdoc.config.ts, using defaults: ${err instanceof Error ? err.message : err}`
-    );
-    _config = defineConfig({ site: { title: "ezdoc" } });
+/** 用户传入的配置（部分可选） */
+export type EzdocConfig = z.input<typeof ezdocSchema>;
+
+/** 经过 Zod 校验 + 默认值填充后的完整配置 */
+export type ResolvedEzdocConfig = z.output<typeof ezdocSchema>;
+
+export type SiteConfig = z.infer<typeof siteSchema>;
+export type DocsConfig = z.infer<typeof docsSchema>;
+export type ThemeConfig = z.infer<typeof themeSchema>;
+export type I18nConfig = z.infer<typeof i18nSchema>;
+export type LocaleEntry = z.infer<typeof localeSchema>;
+export type VersionsConfig = z.infer<typeof versionsSchema>;
+export type ServerConfig = z.infer<typeof serverSchema>;
+export type DeployConfig = z.infer<typeof deploySchema>;
+export type OverridesConfig = z.infer<typeof overridesSchema>;
+
+// ─── 错误格式化 ──────────────────────────────────────────────
+
+const RED = "\x1b[31m";
+const GRAY = "\x1b[90m";
+const BOLD = "\x1b[1m";
+const RESET = "\x1b[0m";
+
+function formatValidationErrors(error: z.ZodError, source: string): void {
+  console.error(`\n${RED}${BOLD}[ezdoc] ${source} 配置校验失败:${RESET}\n`);
+
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    console.error(`  ${RED}✗${RESET} ${BOLD}${path}${RESET} — ${issue.message}`);
   }
 
-  return _config;
+  console.error(
+    `\n  ${GRAY}共 ${error.issues.length} 个错误。请修复后重试。${RESET}\n`,
+  );
+}
+
+// ─── defineConfig ─────────────────────────────────────────────
+
+export function defineConfig(raw: EzdocConfig): ResolvedEzdocConfig {
+  const result = ezdocSchema.safeParse(raw);
+  if (!result.success) {
+    formatValidationErrors(result.error, "ezdoc.config.ts");
+    process.exit(1);
+  }
+  return result.data;
+}
+
+// ─── validateConfig（供 CLI 调用） ─────────────────────────────
+
+export function validateConfig(raw: unknown): ResolvedEzdocConfig {
+  const result = ezdocSchema.safeParse(raw);
+  if (!result.success) {
+    formatValidationErrors(result.error, "ezdoc.config.ts");
+    process.exit(1);
+  }
+  return result.data;
 }
 
 export function getBasePath(): string {

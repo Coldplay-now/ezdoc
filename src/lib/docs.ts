@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import matter from "gray-matter";
+import { z } from "zod";
 import ezdocConfig from "@config";
 
 // Re-export client-safe types and utilities
@@ -87,6 +88,86 @@ function scanMarkdownFiles(dir: string, base: string = ""): string[] {
   return result;
 }
 
+// ─── docs.json Zod schema ────────────────────────────────────
+
+const navPageSchema: z.ZodType<string | { title: string; path: string } | { group: string; pages: unknown[] }> = z.union([
+  z.string(),
+  z.object({ title: z.string(), path: z.string() }),
+  z.object({
+    group: z.string(),
+    pages: z.lazy(() => z.array(navPageSchema)),
+  }),
+]);
+
+const docsJsonSchema = z.object({
+  navigation: z.array(z.object({
+    group: z.string(),
+    pages: z.array(navPageSchema),
+  })),
+});
+
+/** 校验 docs.json 并返回解析后的导航，供 CLI check 命令使用 */
+export function validateDocsJson(locale: string): { valid: boolean; warnings: string[] } {
+  const docsDir = getDocsDir(locale);
+  const navFile = path.join(docsDir, getNavFileName());
+  const warnings: string[] = [];
+
+  if (!fs.existsSync(navFile)) {
+    return { valid: true, warnings: [`${navFile} 不存在，将使用目录扫描`] };
+  }
+
+  const raw = fs.readFileSync(navFile, "utf-8");
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    return { valid: false, warnings: [`${navFile} 不是合法的 JSON`] };
+  }
+
+  const result = docsJsonSchema.safeParse(json);
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      warnings.push(`${issue.path.join(".")}: ${issue.message}`);
+    }
+    return { valid: false, warnings };
+  }
+
+  // 逻辑校验：文件存在性 + 路径重复
+  const paths: string[] = [];
+  function collectPaths(pages: unknown[]): void {
+    for (const page of pages) {
+      if (typeof page === "string") {
+        paths.push(page);
+      } else if (typeof page === "object" && page !== null) {
+        const obj = page as Record<string, unknown>;
+        if ("path" in obj) paths.push(obj.path as string);
+        if ("pages" in obj) collectPaths(obj.pages as unknown[]);
+      }
+    }
+  }
+  for (const group of result.data.navigation) {
+    collectPaths(group.pages);
+  }
+
+  // 检查重复路径
+  const seen = new Set<string>();
+  for (const p of paths) {
+    if (seen.has(p)) {
+      warnings.push(`路径 "${p}" 重复出现`);
+    }
+    seen.add(p);
+  }
+
+  // 检查文件存在性
+  for (const p of paths) {
+    if (!resolveDocFile(p, locale)) {
+      warnings.push(`路径 "${p}" 对应的 .md/.mdx 文件不存在`);
+    }
+  }
+
+  return { valid: true, warnings };
+}
+
 // ─── getNavigation ──────────────────────────────────────────
 
 /**
@@ -110,10 +191,7 @@ export function getNavigation(locale: string): NavGroup[] {
 function parseNavFile(navFile: string, locale: string): NavGroup[] {
   const raw = fs.readFileSync(navFile, "utf-8");
 
-  let json: {
-    navigation: Array<Record<string, unknown>>;
-  };
-
+  let json: unknown;
   try {
     json = JSON.parse(raw);
   } catch (err) {
@@ -123,32 +201,30 @@ function parseNavFile(navFile: string, locale: string): NavGroup[] {
     return [];
   }
 
-  if (!json.navigation || !Array.isArray(json.navigation)) {
-    console.error(`[ezdoc] Invalid docs.json: missing "navigation" array in ${navFile}`);
+  const result = docsJsonSchema.safeParse(json);
+  if (!result.success) {
+    console.error(`[ezdoc] ${navFile} 格式错误:`);
+    for (const issue of result.error.issues) {
+      console.error(`  ${issue.path.join(".")}: ${issue.message}`);
+    }
     return [];
   }
 
-  return json.navigation.map((group) => parseNavGroup(group, locale));
+  return result.data.navigation.map((group) => resolveNavGroup(group, locale));
 }
 
-/** Recursively parse a navigation group from docs.json */
-function parseNavGroup(raw: Record<string, unknown>, locale: string): NavGroup {
-  const group = (raw.group as string) ?? "";
-  const pages = (raw.pages as unknown[]) ?? [];
-
+/** Recursively resolve a navigation group, reading titles from frontmatter */
+function resolveNavGroup(raw: { group: string; pages: unknown[] }, locale: string): NavGroup {
   return {
-    group,
-    pages: pages.map((page): NavItem | NavGroup => {
-      // String shorthand: "getting-started"
+    group: raw.group,
+    pages: raw.pages.map((page): NavItem | NavGroup => {
       if (typeof page === "string") {
         return { title: getTitleForSlug(page, locale), path: page };
       }
       const obj = page as Record<string, unknown>;
-      // Nested group: { group: "...", pages: [...] }
       if ("group" in obj && "pages" in obj) {
-        return parseNavGroup(obj, locale);
+        return resolveNavGroup(obj as { group: string; pages: unknown[] }, locale);
       }
-      // Explicit page: { title: "...", path: "..." }
       return { title: (obj.title as string) ?? "", path: (obj.path as string) ?? "" };
     }),
   };

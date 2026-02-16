@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@config": ["./ezdoc.config.ts"]
+      "@config": ["./ezdoc.config.ts"],
+      "@overrides/*": ["./overrides/*"]
     }
   },
   "include": [
