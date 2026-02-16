@@ -125,6 +125,21 @@
   }
 }
 
+/* ---------- Shiki dual-theme token colors ---------- */
+/* rehype-pretty-code with dual themes sets --shiki-light / --shiki-dark
+   CSS variables on each <span>. We map them to `color` based on the
+   current color scheme. */
+
+code[data-theme],
+code[data-theme] span {
+  color: var(--shiki-light);
+}
+
+.dark code[data-theme],
+.dark code[data-theme] span {
+  color: var(--shiki-dark);
+}
+
 /* ---------- KaTeX math formula overrides ---------- */
 
 /* Dark mode: ensure formula text follows the foreground color */
