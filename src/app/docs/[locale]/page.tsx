@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getNavigation, getAllLocales } from "@/lib/docs";
+import { getNavigation, getAllLocales, flattenNavigation } from "@/lib/docs";
 
 export function generateStaticParams() {
   return getAllLocales().map((locale) => ({ locale }));
@@ -15,11 +15,8 @@ export default async function LocaleDocsIndexPage({
 }) {
   const { locale } = await params;
   const navigation = getNavigation(locale);
-
-  let firstDocPath = "getting-started";
-  if (navigation.length > 0 && navigation[0].pages.length > 0) {
-    firstDocPath = navigation[0].pages[0].path;
-  }
+  const flat = flattenNavigation(navigation);
+  const firstDocPath = flat[0]?.path ?? "getting-started";
 
   redirect(`/docs/${locale}/${firstDocPath}`);
 }

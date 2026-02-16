@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/search/search-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
-import type { NavGroup } from "@/lib/docs";
+import { type NavGroup, flattenNavigation } from "@/lib/nav-types";
 import type { LocaleEntry } from "@/lib/config";
 
 /* ------------------------------------------------------------------ */
@@ -64,7 +64,7 @@ export function HomeContent({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navigation = allNavigations[locale] ?? [];
-  const firstDocPath = navigation[0]?.pages[0]?.path ?? "";
+  const firstDocPath = flattenNavigation(navigation)[0]?.path ?? "";
 
   /* ---------- Cmd/Ctrl+K shortcut ---------- */
   useEffect(() => {
@@ -149,7 +149,8 @@ export function HomeContent({
           <section className="mx-auto w-full max-w-4xl pb-24">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {navigation.map((group, i) => {
-                const firstPage = group.pages[0];
+                const flat = flattenNavigation([group]);
+                const firstPage = flat[0];
                 if (!firstPage) return null;
                 const style = cardStyles[i % cardStyles.length];
                 const Icon = style.icon;
@@ -171,7 +172,7 @@ export function HomeContent({
                       {group.group}
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {group.pages.length} 篇文档
+                      {flat.length} 篇文档
                     </p>
                     <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
                       浏览

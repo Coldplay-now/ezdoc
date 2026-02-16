@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { NavItem } from "@/lib/docs";
+import type { NavItem } from "@/lib/nav-types";
 
 const i18nLabels: Record<string, { prev: string; next: string }> = {
   zh: { prev: "上一页", next: "下一页" },

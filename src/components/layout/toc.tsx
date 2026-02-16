@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { List, Pin, PinOff, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FindInPage } from "@/components/search/find-in-page";
-import type { TocItem } from "@/lib/docs";
+import type { TocItem } from "@/lib/nav-types";
 
 interface TocProps {
   toc: TocItem[];

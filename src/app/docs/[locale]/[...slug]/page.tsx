@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDocBySlug, getAllSlugs } from "@/lib/mdx";
-import { getNavigation, getAllLocales, extractToc, getPrevNext } from "@/lib/docs";
+import { getNavigation, getAllLocales, extractToc, getPrevNext, getBreadcrumbs, getLastModified } from "@/lib/docs";
 import { components } from "@/components/mdx/mdx-components";
 import { TableOfContents } from "@/components/layout/toc";
 import { DocPagination } from "@/components/layout/doc-pagination";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import ezdocConfig from "@config";
 
 // ---------------------------------------------------------------------------
@@ -83,12 +84,17 @@ export default async function DocPage({
   const navigation = getNavigation(locale);
   const toc = extractToc(doc.raw);
   const { prev, next } = getPrevNext(slug, navigation);
+  const breadcrumbs = getBreadcrumbs(slug, navigation, locale);
+  const lastModified = getLastModified(slug, locale);
 
   return (
     <>
       {/* Main content area */}
       <main id="main-content" data-pagefind-body className="min-w-0 flex-1 px-6 py-8 lg:px-10 lg:py-10">
         <div className="max-w-3xl">
+          {/* Breadcrumb */}
+          <Breadcrumb items={breadcrumbs} />
+
           {/* Article header */}
           {doc.frontmatter.title && (
             <div className="mb-8">
@@ -107,6 +113,17 @@ export default async function DocPage({
           <article className="prose prose-neutral dark:prose-invert max-w-none">
             {doc.content}
           </article>
+
+          {/* Last modified */}
+          {lastModified && (
+            <div className="mt-8 border-t border-border pt-4 text-sm text-muted-foreground">
+              最后更新于{" "}
+              {new Date(lastModified).toLocaleDateString(
+                locale === "zh" ? "zh-CN" : "en-US",
+                { year: "numeric", month: "long", day: "numeric" },
+              )}
+            </div>
+          )}
 
           {/* Prev / Next navigation */}
           <DocPagination prev={prev} next={next} locale={locale} />

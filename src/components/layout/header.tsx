@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 import type { LocaleEntry } from "@/lib/config";
-import type { NavGroup } from "@/lib/docs";
+import { type NavGroup, flattenNavigation } from "@/lib/nav-types";
 import type { LocaleSlugsMap } from "./docs-layout-shell";
 
 interface HeaderProps {
@@ -26,9 +26,9 @@ interface HeaderProps {
 export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, locale, locales, navigation, currentSlug, localeSlugs }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // Determine which navigation group is currently active
+  // Determine which top-level navigation group is currently active
   const activeGroup = navigation?.find((g) =>
-    g.pages.some((p) => p.path === currentSlug),
+    flattenNavigation([g]).some((p) => p.path === currentSlug),
   )?.group;
 
   const toggleMenu = useCallback(() => {
@@ -89,7 +89,8 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, l
             <nav className="hidden lg:flex items-stretch gap-1" aria-label="Content groups">
               {navigation.map((group) => {
                 const isActive = group.group === activeGroup;
-                const firstPage = group.pages[0];
+                const firstPage = flattenNavigation([group])[0];
+                if (!firstPage) return null;
                 return (
                   <Link
                     key={group.group}

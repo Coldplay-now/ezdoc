@@ -1,4 +1,4 @@
-import { getNavigation, getAllLocales } from "@/lib/docs";
+import { getNavigation, getAllLocales, flattenNavigation } from "@/lib/docs";
 import ezdocConfig from "@config";
 import { DocsLayoutShell } from "@/components/layout/docs-layout-shell";
 
@@ -23,7 +23,8 @@ export default async function LocaleDocsLayout({
   const localeSlugs: Record<string, { slugs: string[]; firstPage: string }> = {};
   for (const l of locales) {
     const nav = l.code === locale ? navigation : getNavigation(l.code);
-    const allSlugs = nav.flatMap((g) => g.pages.map((p) => p.path));
+    const flat = flattenNavigation(nav);
+    const allSlugs = flat.map((p) => p.path);
     const firstPage = allSlugs[0] ?? "";
     localeSlugs[l.code] = { slugs: allSlugs, firstPage };
   }

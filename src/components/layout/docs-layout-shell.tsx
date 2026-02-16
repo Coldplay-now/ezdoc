@@ -4,7 +4,7 @@ import { useState, useCallback, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
-import type { NavGroup } from "@/lib/docs";
+import type { NavGroup } from "@/lib/nav-types";
 import type { LocaleEntry } from "@/lib/config";
 
 export type LocaleSlugsMap = Record<string, { slugs: string[]; firstPage: string }>;

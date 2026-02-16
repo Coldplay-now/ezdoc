@@ -1,32 +1,14 @@
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import matter from "gray-matter";
 import ezdocConfig from "@config";
 
-// ─── 类型定义 ───────────────────────────────────────────────
+// Re-export client-safe types and utilities
+export type { NavItem, NavGroup, TocItem, DocMeta, BreadcrumbItem } from "./nav-types";
+export { isNavItem, flattenNavigation } from "./nav-types";
 
-export interface NavItem {
-  title: string;
-  path: string;
-}
-
-export interface NavGroup {
-  group: string;
-  pages: NavItem[];
-}
-
-export interface TocItem {
-  depth: number; // 2-4 (h2-h4)
-  text: string;
-  id: string;
-}
-
-export interface DocMeta {
-  title: string;
-  description?: string;
-  icon?: string;
-  slug: string;
-}
+import { type NavItem, type NavGroup, type TocItem, type BreadcrumbItem, isNavItem, flattenNavigation } from "./nav-types";
 
 // ─── locale 辅助 ────────────────────────────────────────────
 
@@ -129,10 +111,7 @@ function parseNavFile(navFile: string, locale: string): NavGroup[] {
   const raw = fs.readFileSync(navFile, "utf-8");
 
   let json: {
-    navigation: Array<{
-      group: string;
-      pages: Array<string | { title: string; path: string }>;
-    }>;
+    navigation: Array<Record<string, unknown>>;
   };
 
   try {
@@ -149,18 +128,30 @@ function parseNavFile(navFile: string, locale: string): NavGroup[] {
     return [];
   }
 
-  return json.navigation.map((group) => ({
-    group: group.group,
-    pages: group.pages.map((page): NavItem => {
+  return json.navigation.map((group) => parseNavGroup(group, locale));
+}
+
+/** Recursively parse a navigation group from docs.json */
+function parseNavGroup(raw: Record<string, unknown>, locale: string): NavGroup {
+  const group = (raw.group as string) ?? "";
+  const pages = (raw.pages as unknown[]) ?? [];
+
+  return {
+    group,
+    pages: pages.map((page): NavItem | NavGroup => {
+      // String shorthand: "getting-started"
       if (typeof page === "string") {
-        return {
-          title: getTitleForSlug(page, locale),
-          path: page,
-        };
+        return { title: getTitleForSlug(page, locale), path: page };
       }
-      return { title: page.title, path: page.path };
+      const obj = page as Record<string, unknown>;
+      // Nested group: { group: "...", pages: [...] }
+      if ("group" in obj && "pages" in obj) {
+        return parseNavGroup(obj, locale);
+      }
+      // Explicit page: { title: "...", path: "..." }
+      return { title: (obj.title as string) ?? "", path: (obj.path as string) ?? "" };
     }),
-  }));
+  };
 }
 
 /** 扫描目录构建导航（回退方案） */
@@ -244,7 +235,7 @@ export function getPrevNext(
   navigation: NavGroup[]
 ): { prev: NavItem | null; next: NavItem | null } {
   // 将导航树扁平化为有序列表
-  const flat: NavItem[] = navigation.flatMap((group) => group.pages);
+  const flat: NavItem[] = flattenNavigation(navigation);
 
   const index = flat.findIndex((item) => item.path === currentSlug);
 
@@ -256,4 +247,59 @@ export function getPrevNext(
     prev: index > 0 ? flat[index - 1] : null,
     next: index < flat.length - 1 ? flat[index + 1] : null,
   };
+}
+
+// ─── getBreadcrumbs ──────────────────────────────────────────
+
+/**
+ * 根据当前 slug，在导航树中查找面包屑路径。
+ */
+export function getBreadcrumbs(
+  slug: string,
+  navigation: NavGroup[],
+  locale: string,
+): BreadcrumbItem[] {
+  const root: BreadcrumbItem = { label: "文档", href: `/docs/${locale}` };
+
+  function search(
+    groups: NavGroup[],
+    trail: BreadcrumbItem[],
+  ): BreadcrumbItem[] | null {
+    for (const group of groups) {
+      const groupCrumb: BreadcrumbItem = { label: group.group };
+      for (const item of group.pages) {
+        if (isNavItem(item)) {
+          if (item.path === slug) {
+            return [...trail, groupCrumb, { label: item.title }];
+          }
+        } else {
+          const found = search([item], [...trail, groupCrumb]);
+          if (found) return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  const found = search(navigation, [root]);
+  return found ?? [root, { label: slug }];
+}
+
+// ─── getLastModified ─────────────────────────────────────────
+
+/**
+ * 通过 git log 获取文档文件的最后修改时间（ISO 8601）。
+ */
+export function getLastModified(slug: string, locale: string): string | null {
+  const filePath = resolveDocFile(slug, locale);
+  if (!filePath) return null;
+  try {
+    const timestamp = execSync(
+      `git log -1 --format=%aI -- "${filePath}"`,
+      { encoding: "utf-8", timeout: 5000 },
+    ).trim();
+    return timestamp || null;
+  } catch {
+    return null;
+  }
 }
