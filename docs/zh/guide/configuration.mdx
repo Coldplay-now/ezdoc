@@ -263,6 +263,40 @@ EZDOC_BASE_PATH=/ezdoc pnpm build
 
 ---
 
+## overrides — 组件覆盖
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `dir` | `string` | `"overrides"` | 组件覆盖目录路径（相对于项目根目录） |
+
+```ts
+overrides: {
+  dir: "overrides",  // 默认值，通常不需要修改
+}
+```
+
+详见 [组件覆盖指南](/docs/zh/guide/component-overrides)。
+
+---
+
+## 配置校验
+
+ezdoc 使用 Zod 在运行时校验配置。如果配置有误，终端会输出清晰的错误信息：
+
+```text
+[ezdoc] ezdoc.config.ts 配置校验失败:
+
+  ✗ site.title — 不能为空
+  ✗ site.url — Invalid url: must include a protocol (e.g. https://)
+  ✗ deploy.server — deploy.target 包含 "server" 时，deploy.server 配置必填
+
+  共 3 个错误。请修复后重试。
+```
+
+可以随时运行 `pnpm ezdoc check` 校验配置和文档（不触发构建）。
+
+---
+
 ## 默认值一览
 
 不显式配置时，ezdoc 使用以下默认值：
@@ -271,9 +305,10 @@ EZDOC_BASE_PATH=/ezdoc pnpm build
 {
   site: { title: "ezdoc" },
   docs: { dir: "docs", nav: "docs.json" },
-  theme: { defaultMode: "system", primaryColor: "#3b82f6" },
+  theme: { defaultMode: "system" },
   i18n: { defaultLocale: "zh", locales: [{ code: "zh", label: "中文" }] },
   deploy: { target: "github", basePath: "", output: "out" },
+  overrides: { dir: "overrides" },
 }
 ```
 

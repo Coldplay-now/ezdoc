@@ -25,10 +25,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BASE_PATH: basePath || "",
   },
   ...(hasOverrides && {
-    experimental: {
-      turbo: {
-        resolveAlias,
-      },
+    turbopack: {
+      resolveAlias,
     },
   }),
 };

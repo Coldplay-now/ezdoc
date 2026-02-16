@@ -16,7 +16,7 @@ ezdoc 是纯静态站点（Next.js `output: "export"`），构建产物是一组
 ## 本地开发
 
 ```bash
-pnpm dev
+pnpm ezdoc dev
 ```
 
 开发服务器启动后：
@@ -24,15 +24,21 @@ pnpm dev
 - 访问 `http://localhost:3000/docs/zh/getting-started` — 直接访问指定页面
 - 修改 `.mdx` 文件后页面自动热更新
 
+<Callout type="tip" title="配置校验">
+  `ezdoc dev` 在启动前自动校验 `ezdoc.config.ts`，配置有误时直接报错退出。
+</Callout>
+
 ## 本地构建
 
 ```bash
-pnpm build
+pnpm ezdoc build
 ```
 
 构建完成后：
+- 自动校验配置和导航
 - 静态文件输出到 `out/` 目录
 - 自动运行 Pagefind 索引，为全文搜索生成索引文件
+- 输出构建报告（页面数、大小、耗时）
 - 可以用任意静态服务器预览：
 
 ```bash
@@ -44,7 +50,7 @@ npx serve out
 如果部署在子路径下（如 GitHub Pages 的 `https://user.github.io/repo/`），需要设置 `EZDOC_BASE_PATH`：
 
 ```bash
-EZDOC_BASE_PATH=/repo pnpm build
+EZDOC_BASE_PATH=/repo pnpm ezdoc build
 ```
 
 ---
@@ -206,6 +212,32 @@ deploy: {
 
 ---
 
+## 一键部署
+
+使用 CLI 命令一键构建并部署：
+
+```bash
+pnpm ezdoc deploy
+```
+
+根据 `deploy.target` 自动选择部署方式（GitHub Pages / 服务器 / 两者兼有）。
+
+### 初始化 CI 配置
+
+使用 `init-deploy` 自动生成 GitHub Actions workflow 文件：
+
+```bash
+# GitHub Pages 部署
+pnpm ezdoc init-deploy github
+
+# 服务器部署
+pnpm ezdoc init-deploy server
+```
+
+更多 CLI 命令详见 [CLI 命令参考](/docs/zh/guide/cli)。
+
+---
+
 ## 手动部署
 
 如果不使用 GitHub Actions，也可以手动构建并部署：
@@ -213,14 +245,14 @@ deploy: {
 ### 部署到任意静态托管
 
 ```bash
-pnpm build
+pnpm ezdoc build
 # out/ 目录下的所有文件上传到你的静态托管服务
 ```
 
 ### 手动部署到服务器
 
 ```bash
-pnpm build
+pnpm ezdoc build
 rsync -avzr --delete out/ user@your-server.com:/var/www/docs/
 ```
 

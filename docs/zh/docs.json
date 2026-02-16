@@ -15,6 +15,8 @@
           "pages": [
             { "title": "配置指南", "path": "guide/configuration" },
             { "title": "文档目录与导航", "path": "guide/docs-structure" },
+            { "title": "组件覆盖", "path": "guide/component-overrides" },
+            { "title": "CLI 命令参考", "path": "guide/cli" },
             { "title": "部署指南", "path": "guide/deployment" }
           ]
         },
