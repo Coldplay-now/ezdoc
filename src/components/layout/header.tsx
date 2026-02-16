@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Github, Menu, X, Search, Languages } from "lucide-react";
+import { Github, Menu, X, Languages } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchDialog } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
@@ -111,29 +111,6 @@ export function Header({ siteTitle, githubUrl, menuOpen = false, onMenuToggle, l
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            {/* Desktop: search trigger styled as input */}
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="hidden md:inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Search className="size-4" />
-              <span>搜索文档...</span>
-              <kbd className="ml-2 inline-flex h-5 items-center rounded border border-border bg-background px-1.5 text-[11px] font-medium text-muted-foreground">
-                &#8984;K
-              </kbd>
-            </button>
-
-            {/* Mobile: search icon button */}
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="inline-flex md:hidden items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-              aria-label="Search"
-            >
-              <Search className="size-5" />
-            </button>
-
             {githubUrl && (
               <a
                 href={githubUrl}
