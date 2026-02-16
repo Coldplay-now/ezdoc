@@ -143,3 +143,32 @@
   overflow-y: hidden;
   padding: 2px 0;
 }
+
+/* ---------- Find-in-page highlight ---------- */
+
+mark.find-highlight {
+  background-color: oklch(0.9 0.15 90);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+mark.find-highlight-active {
+  background-color: oklch(0.75 0.18 60);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+  outline: 2px solid oklch(0.75 0.18 60 / 50%);
+  outline-offset: 1px;
+}
+
+.dark mark.find-highlight {
+  background-color: oklch(0.5 0.12 90 / 40%);
+}
+
+.dark mark.find-highlight-active {
+  background-color: oklch(0.6 0.16 60 / 60%);
+  outline-color: oklch(0.6 0.16 60 / 30%);
+}

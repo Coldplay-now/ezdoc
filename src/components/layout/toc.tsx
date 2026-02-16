@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { List, Pin, PinOff, X } from "lucide-react";
+import { List, Pin, PinOff, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FindInPage } from "@/components/search/find-in-page";
 import type { TocItem } from "@/lib/docs";
 
 interface TocProps {
@@ -16,6 +17,9 @@ export function TableOfContents({ toc }: TocProps) {
   // Panel state: "closed" | "open" | "pinned"
   const [state, setState] = useState<"closed" | "open" | "pinned">("closed");
 
+  // Find-in-page state
+  const [findOpen, setFindOpen] = useState(false);
+
   // Restore pinned state from localStorage
   useEffect(() => {
     try {
@@ -24,6 +28,25 @@ export function TableOfContents({ toc }: TocProps) {
     } catch {
       // ignore
     }
+  }, []);
+
+  /* ---------- Global Cmd/Ctrl+F shortcut → open find-in-page ---------- */
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isEditable =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        (e.target as HTMLElement)?.isContentEditable;
+      if (isEditable) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        e.preventDefault();
+        setFindOpen(true);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const toggle = useCallback(() => {
@@ -135,20 +158,31 @@ export function TableOfContents({ toc }: TocProps) {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               目录
             </p>
-            <button
-              type="button"
-              onClick={togglePin}
-              aria-label={isPinned ? "取消固定" : "固定目录"}
-              title={isPinned ? "取消固定" : "固定目录"}
-              className={cn(
-                "rounded-md p-1 transition-colors",
-                isPinned
-                  ? "text-primary hover:bg-primary/10"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {isPinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => setFindOpen(true)}
+                aria-label="页内搜索"
+                title="页内搜索 (⌘F)"
+                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Search className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={togglePin}
+                aria-label={isPinned ? "取消固定" : "固定目录"}
+                title={isPinned ? "取消固定" : "固定目录"}
+                className={cn(
+                  "rounded-md p-1 transition-colors",
+                  isPinned
+                    ? "text-primary hover:bg-primary/10"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {isPinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+              </button>
+            </div>
           </div>
 
           {/* TOC links */}
@@ -190,6 +224,8 @@ export function TableOfContents({ toc }: TocProps) {
           </ul>
         </div>
       </aside>
+
+      <FindInPage open={findOpen} onOpenChange={setFindOpen} />
     </>
   );
 }
